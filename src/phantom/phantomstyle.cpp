@@ -2724,7 +2724,7 @@ void PhantomStyle::drawControl(ControlElement element,
               option->palette.currentColorGroup(), textRole));
           qreal rx, ry, rw, rh;
           QRectF(checkRect).getRect(&rx, &ry, &rw, &rh);
-          qreal dim = (qreal)qMin(checkRect.width(), checkRect.height()) * 0.75;
+          qreal dim = (qreal)qMin(checkRect.width(), checkRect.height()) * 0.6;
           QRectF rf(rx + rw / dim, ry + rh / dim, dim, dim);
           painter->drawEllipse(rf);
         }
