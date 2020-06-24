@@ -102,7 +102,7 @@ Q_NEVER_INLINE bool hasTweakTrue(const QObject* object, const char* tweakName) {
 namespace Phantom {
 namespace {
 enum {
-  MenuMinimumWidth = 10,  // Smallest width that menu items can have
+  MenuMinimumWidth = 20,  // Smallest width that menu items can have
   SplitterMaxLength = 25, // Length of splitter handle (not thickness)
   SpinBox_ButtonWidth = 14,
 
@@ -1074,7 +1074,7 @@ Q_NEVER_INLINE void drawCheck(QPainter* painter, QPen& scratchPen,
   using namespace Phantom::SwatchColors;
   qreal rx, ry, rw, rh;
   QRectF(r).getRect(&rx, &ry, &rw, &rh);
-  qreal penWidth = 0.25 * qMin(rw, rh);
+  qreal penWidth = 0.2 * qMin(rw, rh);
   qreal dimx = rw - penWidth;
   qreal dimy = rh - penWidth;
   if (dimx < 0.5 || dimy < 0.5)
@@ -1082,7 +1082,7 @@ Q_NEVER_INLINE void drawCheck(QPainter* painter, QPen& scratchPen,
   qreal x = (rw - dimx) / 2 + rx;
   qreal y = (rh - dimy) / 2 + ry;
   QPointF points[3];
-  points[0] = QPointF(0.0, 0.55);
+  points[0] = QPointF(0.0, 0.4);
   points[1] = QPointF(0.4, 1.0);
   points[2] = QPointF(1.0, 0);
   for (int i = 0; i < 3; ++i) {
@@ -1109,17 +1109,17 @@ Q_NEVER_INLINE void drawHyphen(QPainter* painter, QPen& scratchPen,
   using namespace Phantom::SwatchColors;
   qreal rx, ry, rw, rh;
   QRectF(r).getRect(&rx, &ry, &rw, &rh);
-  qreal penWidth = 0.25 * qMin(rw, rh);
+  qreal penWidth = qMin(rw, rh);
   qreal dimx = rw - penWidth;
   qreal dimy = rh - penWidth;
-  if (dimx < 0.5 || dimy < 0.5)
-    return;
+  //if (dimx < 0.5 || dimy < 0.5)
+  //  return;
   qreal x = (rw - dimx) / 2 + rx;
   qreal y = (rh - dimy) / 2 + ry;
   QPointF p0(0.0 * dimx + x, 0.5 * dimy + y);
   QPointF p1(1.0 * dimx + x, 0.5 * dimy + y);
   scratchPen.setBrush(swatch.brush(color));
-  scratchPen.setCapStyle(Qt::RoundCap);
+  scratchPen.setCapStyle(Qt::SquareCap);
   scratchPen.setWidthF(penWidth);
   Phantom::PSave save(painter);
   if (!painter->testRenderHint(QPainter::Antialiasing))
