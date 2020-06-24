@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
   // QApplication::setLayoutDirection(Qt::RightToLeft);
   PhTestApp a(argc, argv);
   QApplication::setStyle(new PhantomStyle);
+  QApplication::setPalette(namedColorSchemePalette(Polar));
   // Setting the font for the whole application will override qpa
   // widget-specific fonts, like slightly larger fonts used for QMenuBar/item.
   //

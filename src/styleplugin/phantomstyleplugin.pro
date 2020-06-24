@@ -1,6 +1,6 @@
 QT += core gui widgets
 CONFIG += plugin
-TARGET = phantomstyleplugin
+TARGET = $$qtLibraryTarget(phantomstyleplugin)
 TEMPLATE = lib
 
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -15,6 +15,8 @@ SOURCES += phantomstyleplugin.cpp
 HEADERS += phantomstyleplugin.h
 
 OTHER_FILES += phantomstyleplugin.json
+
+DESTDIR = $$[QT_INSTALL_PLUGINS]/styles
 
 g++ {
     QMAKE_CXXFLAGS *= -Wno-unused-function -Wno-unknown-pragmas

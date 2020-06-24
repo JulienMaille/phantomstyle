@@ -115,14 +115,14 @@ static const qreal TabBarTab_Rounding = 0.0;
 static const qreal SpinBox_Rounding = 0.0;
 static const qreal LineEdit_Rounding = 0.0;
 static const qreal FrameFocusRect_Rounding = 1.0;
-static const qreal PushButton_Rounding = 2.0;
-static const qreal ToolButton_Rounding = 1.25;
+static const qreal PushButton_Rounding = 0.0;
+static const qreal ToolButton_Rounding = 0.0;
 static const qreal ProgressBar_Rounding = 0.0;
 static const qreal GroupBox_Rounding = 0.0;
 static const qreal SliderGroove_Rounding = 2.0;
 static const qreal SliderHandle_Rounding = 0.0;
 
-static const qreal CheckMark_WidthOfHeightScale = 0.8;
+static const qreal CheckMark_WidthOfHeightScale = 1.0;
 static const qreal PushButton_HorizontalPaddingFontHeightRatio = 1.0 / 2.0;
 static const qreal TabBar_HPaddingFontRatio = 1.25;
 static const qreal TabBar_VPaddingFontRatio = 1.0 / 1.25;
@@ -145,7 +145,7 @@ static const qreal MenuItem_SubMenuArrowWidthFontRatio = 1.0 / 2.75;
 static const qreal MenuItem_SeparatorHeightFontRatio = 1.0 / 1.5;
 static const qreal MenuItem_CheckMarkVerticalInsetFontRatio = 1.0 / 5.0;
 static const qreal MenuItem_IconRightSpaceFontRatio = 1.0 / 3.0;
-static const bool MenuItem_ShowCheckOnItemsWithIcons = true;
+static const bool MenuItem_ShowCheckOnItemsWithIcons = false;
 
 static const bool BranchesOnEdge = false;
 static const bool OverhangShadows = false;
@@ -156,13 +156,13 @@ static const bool MenuBarLeftMargin = false;
 static const bool AllowToolBarAutoRaise = true;
 // Note that this only applies to the disclosure etc. decorators in tree views.
 static const bool ShowItemViewDecorationSelected = false;
-static const bool UseQMenuForComboBoxPopup = true;
+static const bool UseQMenuForComboBoxPopup = false;
 static const bool ItemView_UseFontHeightForDecorationSize = true;
-static const bool BorderSpecularOnPanelButton = true;
-static const bool BorderSpecularOnFrameTab = true;
-static const bool BorderSpecularOnComboBox = true;
-static const bool BorderSpecularOnProgressBar = true;
-static const bool BorderSpecularOnScrollBar = true;
+static const bool BorderSpecularOnPanelButton = false;
+static const bool BorderSpecularOnFrameTab = false;
+static const bool BorderSpecularOnComboBox = false;
+static const bool BorderSpecularOnProgressBar = false;
+static const bool BorderSpecularOnScrollBar = false;
 
 // Whether or not the non-raised tabs in a tab bar have shininess/highlights to
 // them. Setting this to false adds an extra visual hint for distinguishing
