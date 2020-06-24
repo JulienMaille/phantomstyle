@@ -134,15 +134,15 @@ static const qreal MenuBar_VerticalPaddingFontRatio = 1.0 / 6.0;
 
 static const qreal MenuItem_LeftMarginFontRatio = 1.0 / 4.0;
 static const qreal MenuItem_RightMarginForTextFontRatio = 1.0 / 1.5;
-static const qreal MenuItem_RightMarginForArrowFontRatio = 1.0 / 4.0;
-static const qreal MenuItem_VerticalMarginsFontRatio = 1.0 / 8.0;
+static const qreal MenuItem_RightMarginForArrowFontRatio = 2.5 / 4.0;
+static const qreal MenuItem_VerticalMarginsFontRatio = 2.0 / 8.0;
 // Number that's multiplied with a font's height to get the space between a
 // menu item's checkbox (or other sign) and its text (or icon).
 static const qreal MenuItem_CheckRightSpaceFontRatio = 1.0 / 4.0;
 static const qreal MenuItem_TextMnemonicSpaceFontRatio = 1.5;
 static const qreal MenuItem_SubMenuArrowSpaceFontRatio = 1.0 / 1.5;
 static const qreal MenuItem_SubMenuArrowWidthFontRatio = 1.0 / 2.75;
-static const qreal MenuItem_SeparatorHeightFontRatio = 1.0 / 1.5;
+static const qreal MenuItem_SeparatorHeightFontRatio = 0.5 / 1.5;
 static const qreal MenuItem_CheckMarkVerticalInsetFontRatio = 1.0 / 5.0;
 static const qreal MenuItem_IconRightSpaceFontRatio = 1.0 / 3.0;
 static const bool MenuItem_ShowCheckOnItemsWithIcons = false;
