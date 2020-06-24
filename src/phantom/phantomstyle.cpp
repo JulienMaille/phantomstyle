@@ -4112,7 +4112,7 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
       return 0;
     }
 #endif
-    val = 1;
+    val = 0;
     break;
   case PM_DefaultFrameWidth:
     // Original comment from fusion:
