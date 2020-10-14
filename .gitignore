@@ -52,3 +52,4 @@ docs
 
 # easy_profiler, if present. Typically copied from out-of-tree.
 thirdparty/easy_profiler
+*.vcxproj*
