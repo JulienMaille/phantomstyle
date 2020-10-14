@@ -1665,16 +1665,11 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       Ph::fillRectEdges(painter, r, Qt::RightEdge, 1,
                         swatch.color(S_window_divider));
     } else {
-      // TODO replace with new code
-      const int margin = 6;
-      const int offset = r.height() / 2;
-      painter->setPen(QPen(option->palette.background().color().darker(110)));
-      painter->drawLine(r.topLeft().x() + margin, r.topLeft().y() + offset,
-                        r.topRight().x() - margin, r.topRight().y() + offset);
-      painter->setPen(QPen(option->palette.background().color().lighter(110)));
-      painter->drawLine(r.topLeft().x() + margin, r.topLeft().y() + offset + 1,
-                        r.topRight().x() - margin,
-                        r.topRight().y() + offset + 1);
+      if (r.width() >= 10)
+        r.adjust(3, 0, -3, 0);
+      r.setHeight(r.height() / 2 + 1);
+      Ph::fillRectEdges(painter, r, Qt::BottomEdge, 1,
+                        swatch.color(S_window_divider));
     }
     break;
   }
