@@ -984,7 +984,7 @@ int fontMetricsWidth(const QFontMetrics& fontMetrics, const QString& text) {
 Q_NEVER_INLINE void drawArrow(QPainter* p, QRect rect,
                               Qt::ArrowType arrowDirection,
                               const QBrush& brush) {
-  const qreal ArrowBaseRatio = 0.70;
+  const qreal ArrowBaseRatio = 0.45;
   qreal irx, iry, irw, irh;
   QRectF(rect).getRect(&irx, &iry, &irw, &irh);
   if (irw < 1.0 || irh < 1.0)
@@ -1009,41 +1009,38 @@ Q_NEVER_INLINE void drawArrow(QPainter* p, QRect rect,
   case Qt::DownArrow:
     arrowRect.setTop(std::round(arrowRect.top()));
     points[0] = arrowRect.topLeft();
-    points[1] = arrowRect.topRight();
-    points[2] = QPointF(arrowRect.center().x(), arrowRect.bottom());
+    points[1] = QPointF(arrowRect.center().x(), arrowRect.bottom());
+    points[2] = arrowRect.topRight();
     break;
   case Qt::RightArrow: {
     arrowRect.setLeft(std::round(arrowRect.left()));
     points[0] = arrowRect.topLeft();
-    points[1] = arrowRect.bottomLeft();
-    points[2] = QPointF(arrowRect.right(), arrowRect.center().y());
+    points[1] = QPointF(arrowRect.right(), arrowRect.center().y());
+    points[2] = arrowRect.bottomLeft();
     break;
   }
   case Qt::LeftArrow:
     arrowRect.setRight(std::round(arrowRect.right()));
     points[0] = arrowRect.topRight();
-    points[1] = arrowRect.bottomRight();
-    points[2] = QPointF(arrowRect.left(), arrowRect.center().y());
+    points[1] = QPointF(arrowRect.left(), arrowRect.center().y());
+    points[2] = arrowRect.bottomRight();
     break;
   case Qt::UpArrow:
   default:
     arrowRect.setBottom(std::round(arrowRect.bottom()));
     points[0] = arrowRect.bottomLeft();
-    points[1] = arrowRect.bottomRight();
-    points[2] = QPointF(arrowRect.center().x(), arrowRect.top());
+    points[1] = QPointF(arrowRect.center().x(), arrowRect.top());
+    points[2] = arrowRect.bottomRight();
     break;
   }
   auto oldPen = p->pen();
-  auto oldBrush = p->brush();
   bool oldAA = p->testRenderHint(QPainter::Antialiasing);
-  p->setPen(Qt::NoPen);
-  p->setBrush(brush);
+  p->setPen(QPen(brush.color(), 1.6, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
   if (!oldAA) {
     p->setRenderHint(QPainter::Antialiasing);
   }
-  p->drawConvexPolygon(points, 3);
+  p->drawPolyline(points, 3);
   p->setPen(oldPen);
-  p->setBrush(oldBrush);
   if (!oldAA) {
     p->setRenderHint(QPainter::Antialiasing, false);
   }
