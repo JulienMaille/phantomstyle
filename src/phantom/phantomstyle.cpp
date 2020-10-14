@@ -1995,6 +1995,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       // kinda repurposing this, hmm
       fill = S_scrollbarGutter;
       specular = S_button_pressed_specular;
+      outline = S_highlight;
     }
     if (hasFocus || isDefault) {
       outline = S_highlight_outline;
