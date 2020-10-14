@@ -219,7 +219,7 @@ QColor outlineOf(const QPalette& pal) {
   return adjustLightness(pal.color(QPalette::Window), -0.1);
 }
 QColor gutterColorOf(const QPalette& pal) {
-  return adjustLightness(pal.color(QPalette::Window), -0.03);
+  return adjustLightness(pal.color(QPalette::Button), -0.03);
 }
 QColor lightShadeOf(const QColor& underlying) {
   return adjustLightness(underlying, 0.07);
@@ -372,19 +372,19 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_highlightedText] = pal.color(QPalette::HighlightedText);
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
 
-  colors[S_window_outline] = Dc::adjustLightness(colors[S_window], -0.1);
+  colors[S_window_outline] = Dc::adjustLightness(colors[S_button], -0.1);
   colors[S_window_specular] = Dc::specularOf(colors[S_window]);
-  colors[S_window_divider] = Dc::dividerColor(colors[S_window]);
-  colors[S_window_lighter] = Dc::lightShadeOf(colors[S_window]);
-  colors[S_window_darker] = Dc::darkShadeOf(colors[S_window]);
+  colors[S_window_divider] = pal.color(QPalette::Midlight);
+  colors[S_window_lighter] = pal.color(QPalette::Light);
+  colors[S_window_darker] = pal.color(QPalette::Dark);
   colors[S_button_specular] = Dc::specularOf(colors[S_button]);
   colors[S_button_pressed] = Dc::pressedOf(colors[S_button]);
   colors[S_button_pressed_specular] = Dc::specularOf(colors[S_button_pressed]);
-  colors[S_base_shadow] = Dc::overhangShadowOf(colors[S_base]);
-  colors[S_base_divider] = Dc::dividerColor(colors[S_base]);
+  colors[S_base_shadow] = pal.color(QPalette::Shadow);
+  colors[S_base_divider] = pal.color(QPalette::Midlight);
   colors[S_windowText_disabled] =
       pal.color(QPalette::Disabled, QPalette::WindowText);
-  colors[S_highlight_outline] = Dc::adjustLightness(colors[S_highlight], -0.05);
+  colors[S_highlight_outline] = colors[S_highlight];
   colors[S_highlight_specular] = Dc::specularOf(colors[S_highlight]);
   colors[S_progressBar_outline] = Dc::progressBarOutlineColorOf(pal);
   colors[S_inactiveTabYesFrame] =
@@ -1697,6 +1697,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       // kinda repurposing this, hmm
       fill = S_scrollbarGutter;
       specular = S_none;
+      outline = S_highlight;
     }
     if (hasFocus) {
       outline = S_highlight_outline;
