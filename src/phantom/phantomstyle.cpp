@@ -104,7 +104,6 @@ namespace {
 enum {
   MenuMinimumWidth = 20,  // Smallest width that menu items can have
   SplitterMaxLength = 25, // Length of splitter handle (not thickness)
-  SpinBox_ButtonWidth = 14,
 
   // These two are currently not based on font, but could be
   LineEdit_ContentsHPad = 2,
@@ -4129,13 +4128,9 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     val = 24;
     break;
   case PM_ScrollBarExtent:
-    // Classic Mac would have an extent of 15 (14 visible clickable, need +1 in
-    // Qt for frame), so we're 1px thinner.
-    val = 14;
-    break;
   case PM_SliderThickness:
   case PM_SliderLength:
-    val = 15;
+    val = QFontMetrics(qApp->font()).height()+2;
     break;
   case PM_DockWidgetTitleMargin:
     val = 1;
@@ -4693,7 +4688,7 @@ QRect PhantomStyle::subControlRect(ComplexControl control,
     }
     case SC_SliderGroove: {
       QPoint grooveCenter = slider->rect.center();
-      const int grooveThickness = (int)Ph::dpiScaled(7);
+      const int grooveThickness = (int)Ph::dpiScaled(proxy()->pixelMetric(PM_SliderThickness)/2);
       if (slider->orientation == Qt::Horizontal) {
         rect.setHeight(grooveThickness);
         if (slider->tickPosition & QSlider::TicksAbove)
@@ -4725,7 +4720,8 @@ QRect PhantomStyle::subControlRect(ComplexControl control,
     int center = spinbox->rect.height() / 2;
     int fw = spinbox->frame ? 1 : 0;
     int y = fw;
-    const int buttonWidth = (int)Ph::dpiScaled(Ph::SpinBox_ButtonWidth) + 2;
+    const int buttonWidth =
+        (int)Ph::dpiScaled(option->fontMetrics.height()+4);
     int x, lx, rx;
     x = spinbox->rect.width() - y - buttonWidth + 2;
     lx = fw;
