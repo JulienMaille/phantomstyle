@@ -997,7 +997,7 @@ int fontMetricsWidth(const QFontMetrics& fontMetrics, const QString& text) {
 Q_NEVER_INLINE void drawArrow(QPainter* p, QRect rect,
                               Qt::ArrowType arrowDirection,
                               const QBrush& brush) {
-  const qreal ArrowBaseRatio = 0.45;
+  const qreal ArrowBaseRatio = 0.6;
   qreal irx, iry, irw, irh;
   QRectF(rect).getRect(&irx, &iry, &irw, &irh);
   if (irw < 1.0 || irh < 1.0)
@@ -3317,10 +3317,10 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       painter->drawLine(centerX - 1, centerY, centerX + 3, centerY);
     } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows) {
       int xoffs = isLeftToRight ? 0 : 1;
-      Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 1, -5 + xoffs, 1),
+      Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 1, -5 + xoffs, -1),
                     Qt::UpArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled);
-      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 0, -5 + xoffs, -1),
+      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 2, -5 + xoffs, -1),
                     Qt::DownArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled);
     }
