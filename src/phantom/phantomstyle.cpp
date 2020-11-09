@@ -118,8 +118,8 @@ static const qreal PushButton_Rounding = 0.0;
 static const qreal ToolButton_Rounding = 0.0;
 static const qreal ProgressBar_Rounding = 0.0;
 static const qreal GroupBox_Rounding = 0.0;
-static const qreal SliderGroove_Rounding = 2.0;
 static const qreal SliderHandle_Rounding = 0.0;
+static const qreal SliderGroove_Rounding = 0.0;
 
 static const qreal CheckMark_WidthOfHeightScale = 1.0;
 static const qreal PushButton_HorizontalPaddingFontHeightRatio = 1.0 / 2.0;
@@ -3970,7 +3970,7 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       Ph::PSave saver(painter);
       Swatchy gutterColor =
           option->state & State_Enabled ? S_scrollbarGutter : S_window;
-      Ph::paintBorderedRoundRect(painter, groove, Ph::SliderGroove_Rounding,
+      Ph::paintBorderedRoundRect(painter, g0, Ph::SliderGroove_Rounding,
                                  swatch, outlineColor, gutterColor);
     }
     if (option->subControls & SC_SliderTickmarks) {
