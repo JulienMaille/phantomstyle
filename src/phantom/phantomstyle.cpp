@@ -4199,7 +4199,7 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     val = 0;
     break;
   case PM_ToolBarItemMargin:
-    val = 1;
+    val = 0;
     break;
   case PM_ListViewIconSize:
   case PM_SmallIconSize:
