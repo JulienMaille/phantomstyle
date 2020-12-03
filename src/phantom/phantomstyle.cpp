@@ -3317,10 +3317,10 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       painter->drawLine(centerX - 1, centerY, centerX + 3, centerY);
     } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows) {
       int xoffs = isLeftToRight ? 0 : 1;
-      Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 1, -5 + xoffs, -1),
+      Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 3, -5 + xoffs, -2),
                     Qt::UpArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled);
-      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 2, -5 + xoffs, -1),
+      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 3, -5 + xoffs, -3),
                     Qt::DownArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled);
     }
@@ -4751,7 +4751,7 @@ QRect PhantomStyle::subControlRect(ComplexControl control,
     int fw = spinbox->frame ? 1 : 0;
     int y = fw;
     const int buttonWidth =
-        (int)Ph::dpiScaled(option->fontMetrics.height()+4);
+        (int)Ph::dpiScaled(option->fontMetrics.height()+6);
     int x, lx, rx;
     x = spinbox->rect.width() - y - buttonWidth + 2;
     lx = fw;
