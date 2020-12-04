@@ -1,15 +1,53 @@
-# C++ objects and libs
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.dll
-*.dylib
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Bb]in_debug/
+[Oo]bj/
+[Ll]og/
+.vs/
+*.Debug
+*.Release
 
-# Qt-es
+# Dont ignore opencv lib/dll
+!Blink/Tools/opencv3/**
+!Blink/Tools/DLSegmentation/**
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+Makefile
+*.sdf
+*.sln
+*.bak
+*.obj
+*.vcxproj
+*.vcxproj.filters
+*.qm
+*.vsp
+*.psess
+*.pdb
+*.opensdf
+*.ilk
+*.manifest
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Qt
+object_script.*.Release
+object_script.*.Debug
+*_plugin_import.cpp
 /.qmake.cache
 /.qmake.stash
 *.pro.user
@@ -18,38 +56,17 @@
 *.qbs.user.*
 *.moc
 moc_*.cpp
+moc_*.h
 qrc_*.cpp
 ui_*.h
+*.qmlc
+*.jsc
 Makefile*
 *build-*
-debug/
-release/
-build/
+*moc*.cbt
 
-# QtCreator
-*.autosave
+# Windows-specific files
+Thumbs.db
+desktop.ini
 
-# QtCtreator Qml
-*.qmlproject.user
-*.qmlproject.user.*
-
-# QtCtreator CMake
-CMakeLists.txt.user
-
-# Translations
-*.qm
-
-# Documentation
-docs
-
-# CLion stuff
-.idea/*
-!.idea/runConfigurations
-!.idea/inspectionProfiles
-
-# MACOS stuff
-.DS_Store
-
-# easy_profiler, if present. Typically copied from out-of-tree.
-thirdparty/easy_profiler
-*.vcxproj*
+.qmake.stash
