@@ -116,6 +116,7 @@ static const qreal LineEdit_Rounding = 0.0;
 static const qreal FrameFocusRect_Rounding = 1.0;
 static const qreal PushButton_Rounding = 0.0;
 static const qreal ToolButton_Rounding = 0.0;
+static const qreal ToolBarButton_Rounding = 1.0;
 static const qreal ProgressBar_Rounding = 0.0;
 static const qreal GroupBox_Rounding = 0.0;
 static const qreal SliderHandle_Rounding = 0.0;
@@ -1724,7 +1725,10 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool isOn = option->state & State_On;
     bool hasFocus = (option->state & State_HasFocus &&
                      option->state & State_KeyboardFocusChange);
-    const qreal rounding = Ph::ToolButton_Rounding;
+    qreal rounding = Ph::ToolButton_Rounding;
+    if (widget && widget->parent() && widget->parent()->inherits("QToolBar"))
+      rounding = Ph::ToolBarButton_Rounding;
+
     Swatchy outline = S_window_outline;
     Swatchy fill = S_button;
     Swatchy specular = S_button_specular;
