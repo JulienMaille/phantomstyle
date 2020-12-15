@@ -1520,7 +1520,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       if (vopt->state & QStyle::State_Selected && qobject_cast<const QListView*>(widget))
         highlight.setAlpha(128);
       else if (vopt->state & QStyle::State_MouseOver)
-        highlight.setAlpha(64);
+        highlight.setAlpha(56);
 
       if (vopt->showDecorationSelected &&
             (vopt->state & QStyle::State_Selected ||
@@ -2724,8 +2724,12 @@ void PhantomStyle::drawControl(ControlElement element,
     bool isEnabled = menuItem->state & State_Enabled;
     bool hasSubMenu = menuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
     if (isSelected) {
-      Swatchy fillColor = isSunken ? S_highlight_outline : S_highlight;
-      painter->fillRect(option->rect, swatch.color(fillColor));
+      QColor fillColor =
+          swatch.color(isSunken ? S_highlight_outline : S_highlight);
+      if (isSelected)
+        fillColor.setAlpha(56);
+
+      painter->fillRect(option->rect, fillColor);
     }
     
     const bool hasIcon = !menuItem->icon.isNull();
@@ -2736,9 +2740,7 @@ void PhantomStyle::drawControl(ControlElement element,
       QRect checkRect =
        Ph::menuItemCheckRect(metrics, option->direction, itemRect, hasSubMenu,
                              !Ph::MenuItem_ShowCheckOnItemsWithIcons);
-      Swatchy signColor = !isEnabled
-                              ? S_windowText
-                              : isSelected ? S_highlightedText : S_windowText;
+
       if (hasIcon && !Ph::MenuItem_ShowCheckOnItemsWithIcons) {
         // Rectangle below icon
         if (isChecked) {
@@ -2746,14 +2748,13 @@ void PhantomStyle::drawControl(ControlElement element,
                                                 itemRect, hasSubMenu, false);
 
           iconRect.adjust(-3, -3, 3, 3);
-          Ph::fillRectOutline(painter, iconRect, 1, swatch.color(S_highlight_outline));
+          //Ph::fillRectOutline(painter, iconRect, 1, swatch.color(S_highlight_outline));
           
-          Swatchy fillColor = !isEnabled
-                              ? S_highlight
-                              : isSelected ? S_window : S_highlight;
+          QColor fillColor = swatch.color(S_highlight);
+          fillColor.setAlpha(128);
           
-          iconRect.adjust(1, 1, -1, -1);
-          painter->fillRect(iconRect, swatch.color(fillColor)); 
+          //iconRect.adjust(1, 1, -1, -1);
+          painter->fillRect(iconRect, fillColor); 
         }
       } else if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
         // Radio button
@@ -2761,9 +2762,7 @@ void PhantomStyle::drawControl(ControlElement element,
           painter->setRenderHint(QPainter::Antialiasing);
           painter->setPen(Qt::NoPen);
           QPalette::ColorRole textRole =
-              !isEnabled ? QPalette::Text
-                         : isSelected ? QPalette::HighlightedText
-                                      : QPalette::ButtonText;
+              !isEnabled ? QPalette::Text : QPalette::ButtonText;
           painter->setBrush(option->palette.brush(
               option->palette.currentColorGroup(), textRole));
           qreal rx, ry, rw, rh;
@@ -2780,7 +2779,7 @@ void PhantomStyle::drawControl(ControlElement element,
         // if ((isChecked && !isSunken) || (!isChecked && isSunken)) {
         if (isChecked) {
           Ph::drawCheck(painter, d->checkBox_pen_scratch, checkRect, swatch,
-                        signColor);
+                        S_windowText);
         }
       }
     }
@@ -2832,7 +2831,7 @@ void PhantomStyle::drawControl(ControlElement element,
 #if 0
       painter->save();
 #endif
-      painter->setPen(swatch.pen(isSelected ? S_highlightedText : S_text));
+      painter->setPen(swatch.pen(S_text));
 
       // Comment from original Qt code which did some dance with the font:
       //
@@ -2919,7 +2918,7 @@ void PhantomStyle::drawControl(ControlElement element,
           option->direction == Qt::RightToLeft ? Qt::LeftArrow : Qt::RightArrow;
       QRect arrowRect =
           Ph::menuItemArrowRect(metrics, option->direction, itemRect);
-      Swatchy arrowColor = isSelected ? S_highlightedText : S_indicator_current;
+      Swatchy arrowColor = S_indicator_current;
       Ph::drawArrow(painter, arrowRect, arrow, swatch.brush(arrowColor));
     }
     painter->restore();
