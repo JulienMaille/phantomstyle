@@ -1507,7 +1507,40 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
 #if QT_CONFIG(itemviews)
   // Called for the content area on tree view rows that are selected
   case PE_PanelItemViewItem: {
-    QCommonStyle::drawPrimitive(elem, option, painter, widget);
+    if (auto vopt = qstyleoption_cast<const QStyleOptionViewItem*>(option)) {
+      QPalette::ColorGroup cg =
+          (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
+              ? QPalette::Normal
+              : QPalette::Disabled;
+      if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+        cg = QPalette::Inactive;
+
+      QColor highlight = option->palette.color(cg, QPalette::Highlight);
+      if (vopt->state & QStyle::State_Selected && qobject_cast<const QListView*>(widget))
+        highlight.setAlpha(128);
+      else if (vopt->state & QStyle::State_MouseOver)
+        highlight.setAlpha(64);
+
+      if (vopt->showDecorationSelected &&
+            (vopt->state & QStyle::State_Selected ||
+             vopt->state & QStyle::State_MouseOver)) {
+          painter->fillRect(vopt->rect, QBrush(highlight));
+      } else {
+        if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+          QPointF oldBO = painter->brushOrigin();
+          painter->setBrushOrigin(vopt->rect.topLeft());
+          painter->fillRect(vopt->rect, vopt->backgroundBrush);
+          painter->setBrushOrigin(oldBO);
+        }
+
+        if (vopt->state & QStyle::State_Selected ||
+            vopt->state & QStyle::State_MouseOver) {
+          QRect textRect =
+              subElementRect(QStyle::SE_ItemViewItemText, option, widget);
+          painter->fillRect(vopt->rect, QBrush(highlight));
+        }
+      }
+    }
     break;
   }
   // Called for left-of-item-content-area on tree view rows that are selected
