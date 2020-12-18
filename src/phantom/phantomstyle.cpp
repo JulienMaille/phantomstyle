@@ -378,10 +378,9 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_highlight] = pal.color(QPalette::Highlight);
   colors[S_highlightedText] = pal.color(QPalette::HighlightedText);
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
-
-  colors[S_window_outline] = Dc::hack_isVeryDarkCol(pal.color(QPalette::Window))
-                                 ? Dc::adjustLightness(colors[S_button], 0.1)
-                                 : Dc::adjustLightness(colors[S_button], -0.1);
+  colors[S_window_outline] = Dc::adjustLightness(
+      colors[S_button],
+      Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)) ? 0.1 : -0.1);
   colors[S_window_specular] = Dc::specularOf(colors[S_window]);
   colors[S_window_divider] = Dc::dividerColor(colors[S_window]);
   colors[S_window_lighter] = Dc::lightShadeOf(colors[S_window]);
@@ -389,7 +388,7 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_frame_outline] =
       (Dc::hack_isVeryDarkCol(pal.color(QPalette::Base)) ||
        Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)))
-          ? Dc::adjustLightness(colors[S_window_outline], 0.08)
+          ? Dc::adjustLightness(colors[S_window_outline], 0.06)
           : colors[S_window_outline];
   colors[S_button_specular] = Dc::specularOf(colors[S_button]);
   colors[S_button_pressed] = Dc::pressedOf(colors[S_button]);
@@ -4025,6 +4024,30 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
           option->state & State_Enabled ? S_scrollbarGutter : S_window;
       Ph::paintBorderedRoundRect(painter, g0, Ph::SliderGroove_Rounding,
                                  swatch, outlineColor, gutterColor);
+
+      QRect clipRect;
+      if (horizontal) {
+        if (slider->upsideDown)
+          clipRect = QRect(handle.right(), groove.top(),
+                           groove.right() - handle.right(), groove.height());
+        else
+          clipRect = QRect(groove.left(), groove.top(), handle.left(),
+                           groove.height());
+      } else {
+        if (slider->upsideDown)
+          clipRect = QRect(groove.left(), handle.bottom(), groove.width(),
+                           groove.height() - handle.bottom());
+        else
+          clipRect = QRect(groove.left(), groove.top(), groove.width(),
+                           handle.top() - groove.top());
+      }
+      painter->save();
+      painter->setClipRect(clipRect.adjusted(0, 0, 1, 1), Qt::IntersectClip);
+      Swatchy gutterColorHighLight =
+          option->state & State_Enabled ? S_highlight_on : S_scrollbarGutter;
+      Ph::paintBorderedRoundRect(painter, g0, Ph::SliderGroove_Rounding, swatch,
+                                 outlineColor, gutterColorHighLight);
+      painter->restore();
     }
     if (option->subControls & SC_SliderTickmarks) {
       Ph::PSave save(painter);
