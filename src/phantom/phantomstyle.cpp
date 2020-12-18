@@ -103,7 +103,7 @@ namespace Phantom {
 namespace {
 enum {
   MenuMinimumWidth = 20,  // Smallest width that menu items can have
-  SplitterMaxLength = 25, // Length of splitter handle (not thickness)
+  SplitterMaxLength = 100, // Length of splitter handle (not thickness)
 
   // These two are currently not based on font, but could be
   LineEdit_ContentsHPad = 2,
@@ -2250,9 +2250,13 @@ void PhantomStyle::drawControl(ControlElement element,
     }
     QRect filledRect =
         QStyle::alignedRect(option->direction, Qt::AlignCenter, size, r);
-    painter->fillRect(filledRect, swatch.color(S_button_specular));
-    Ph::fillRectOutline(painter, filledRect.adjusted(-1, 0, 1, 0), 1,
-                        swatch.color(S_window_divider));
+    painter->fillRect(filledRect, swatch.color(option->state & State_MouseOver
+                                                   ? S_highlight_hover
+                                                   : S_button_specular));
+    Ph::fillRectOutline(painter, filledRect.adjusted(-1, -1, 1, 1), 1,
+                        swatch.color(option->state & State_MouseOver
+                                         ? S_highlight_outline
+                                         : S_window_divider));
     break;
   }
 #endif // QT_CONFIG(splitter)
