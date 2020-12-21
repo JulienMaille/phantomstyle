@@ -1723,7 +1723,8 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool isDown = option->state & State_Sunken;
     bool isOn = option->state & State_On;
     bool hasFocus = (option->state & State_HasFocus &&
-                     option->state & State_KeyboardFocusChange);
+                     option->state & State_KeyboardFocusChange) ||
+                    option->state & State_MouseOver;
     qreal rounding = Ph::ToolButton_Rounding;
     if (widget && widget->parent() && widget->parent()->inherits("QToolBar"))
       rounding = Ph::ToolBarButton_Rounding;
@@ -2032,7 +2033,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool isEnabled = option->state & State_Enabled;
     Q_UNUSED(isEnabled);
     bool hasFocus = (option->state & State_HasFocus &&
-                     option->state & State_KeyboardFocusChange);
+                     option->state & State_KeyboardFocusChange) || option->state & State_MouseOver;
     const qreal rounding = Ph::PushButton_Rounding;
     Swatchy outline = S_frame_outline;
     Swatchy fill = S_button;
