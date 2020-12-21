@@ -285,6 +285,8 @@ enum SwatchColor {
   S_text,
   S_windowText,
   S_highlight,
+  S_highlight_on,
+  S_highlight_hover,
   S_highlightedText,
   S_scrollbarGutter,
   S_window_outline,
@@ -376,6 +378,12 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_text] = pal.color(QPalette::Text);
   colors[S_windowText] = pal.color(QPalette::WindowText);
   colors[S_highlight] = pal.color(QPalette::Highlight);
+  colors[S_highlight_on] =
+      Grad(colors[S_base], pal.color(QPalette::Highlight))
+          .sample(0.3);
+  colors[S_highlight_hover] =
+      Grad(colors[S_base], pal.color(QPalette::Highlight))
+          .sample(0.15);
   colors[S_highlightedText] = pal.color(QPalette::HighlightedText);
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
   colors[S_window_outline] = Dc::adjustLightness(
@@ -391,7 +399,7 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
           ? Dc::adjustLightness(colors[S_window_outline], 0.06)
           : colors[S_window_outline];
   colors[S_button_specular] = Dc::specularOf(colors[S_button]);
-  colors[S_button_pressed] = Dc::pressedOf(colors[S_button]);
+  colors[S_button_pressed] = Dc::pressedOf(colors[S_highlight_on]);
   colors[S_button_pressed_specular] = Dc::specularOf(colors[S_button_pressed]);
   colors[S_base_shadow] = pal.color(QPalette::Shadow);
   colors[S_base_divider] = pal.color(QPalette::Midlight);
@@ -1736,10 +1744,11 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       fill = S_button_pressed;
       specular = S_button_pressed_specular;
     } else if (isOn) {
-      // kinda repurposing this, hmm
-      fill = S_scrollbarGutter;
+      fill = S_highlight_on;
       specular = S_none;
       outline = S_highlight;
+    } else if (hasFocus) {
+      fill = S_highlight_hover;
     }
     if (hasFocus) {
       outline = S_highlight_outline;
@@ -2042,10 +2051,11 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       fill = S_button_pressed;
       specular = S_button_pressed_specular;
     } else if (isOn) {
-      // kinda repurposing this, hmm
-      fill = S_scrollbarGutter;
+      fill = S_highlight_on;
       specular = S_button_pressed_specular;
       outline = S_highlight;
+    } else if (hasFocus) {
+      fill = S_highlight_hover;
     }
     if (hasFocus || isDefault) {
       outline = S_highlight_outline;
