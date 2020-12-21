@@ -218,7 +218,7 @@ bool hack_isVeryDarkCol(const QColor& col) {
 }
 QColor dividerColor(const QColor& underlying) {
   bool isDark = hack_isVeryDarkCol(underlying);
-  return adjustLightness(underlying, isDark ? 0.1 : -0.05);
+  return adjustLightness(underlying, isDark ? 0.08 : -0.05);
 }
 QColor outlineOf(const QPalette& pal) {
   bool isDark = hack_isVeryDarkCol(pal.color(QPalette::Window));
@@ -380,7 +380,7 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
   colors[S_window_outline] = Dc::adjustLightness(
       colors[S_button],
-      Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)) ? 0.1 : -0.1);
+      Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)) ? 0.0 : -0.1);
   colors[S_window_specular] = Dc::specularOf(colors[S_window]);
   colors[S_window_divider] = Dc::dividerColor(colors[S_window]);
   colors[S_window_lighter] = Dc::lightShadeOf(colors[S_window]);
