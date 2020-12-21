@@ -3359,7 +3359,7 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 3, -5 + xoffs, -2),
                     Qt::UpArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled);
-      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 3, -5 + xoffs, -3),
+      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 2, -5 + xoffs, -3),
                     Qt::DownArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled);
     }
