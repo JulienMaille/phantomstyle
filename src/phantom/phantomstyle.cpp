@@ -2674,14 +2674,9 @@ void PhantomStyle::drawControl(ControlElement element,
     auto mbi = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
     if (!mbi)
       break;
+
     const QRect r = option->rect;
-    QRect textRect = r;
-    textRect.setY(textRect.y() +
-                  (r.height() - option->fontMetrics.height()) / 2);
-    int alignment = Qt::AlignHCenter | Qt::AlignTop | Qt::TextShowMnemonic |
-                    Qt::TextDontClip | Qt::TextSingleLine;
-    if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
-      alignment |= Qt::TextHideMnemonic;
+
     const auto itemState = mbi->state;
     bool maybeHasAltKeyNavFocus =
         itemState & State_Selected && itemState & State_HasFocus;
@@ -2691,10 +2686,40 @@ void PhantomStyle::drawControl(ControlElement element,
     }
     Swatchy fill = isSelected ? S_highlight : S_window;
     painter->fillRect(r, swatch.color(fill));
+
+    if (!mbi->icon.isNull()) {
+      const auto metrics =
+          Ph::MenuItemMetrics::ofFontHeight(option->fontMetrics.height());
+
+      QIcon::Mode mode =
+          mbi->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+      QIcon::State state = mbi->state & State_On ? QIcon::On : QIcon::Off;
+      auto window = widget ? widget->window()->windowHandle() : nullptr;
+
+      int margin = Ph::dpiScaled(2);
+      int iconExtent = qMin(r.width() - margin, r.height() - margin);
+      QSize iconSize(iconExtent, iconExtent);
+
+      QPixmap pixmap = mbi->icon.pixmap(window, iconSize, mode, state);
+      const int pixw = (int)(pixmap.width() / pixmap.devicePixelRatio());
+      const int pixh = (int)(pixmap.height() / pixmap.devicePixelRatio());
+      QRect pixmapRect = QStyle::alignedRect(option->direction, Qt::AlignCenter,
+                                             QSize(pixw, pixh), r);
+      painter->drawPixmap(pixmapRect.topLeft(), pixmap);
+    } else {
+      QRect textRect = r;
+      textRect.setY(textRect.y() +
+                      (r.height() - option->fontMetrics.height()) / 2);
+      int alignment = Qt::AlignHCenter | Qt::AlignTop | Qt::TextShowMnemonic |
+                      Qt::TextDontClip | Qt::TextSingleLine;
+      if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
+        alignment |= Qt::TextHideMnemonic;
+      
     QPalette::ColorRole textRole =
         isSelected ? QPalette::HighlightedText : QPalette::Text;
     proxy()->drawItemText(painter, textRect, alignment, mbi->palette,
                           mbi->state & State_Enabled, mbi->text, textRole);
+    }
     if (isSelected)
       break;
     if (Phantom::hasTweakTrue(widget, Phantom::Tweak::menubar_no_ruler))
