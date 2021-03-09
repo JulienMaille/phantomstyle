@@ -2408,7 +2408,7 @@ void PhantomStyle::drawControl(ControlElement element,
               spansToEnd = rect.left() == viewBound.left();
             }
           } else if (isVertical) {
-            spansToEnd = rect.bottom() == viewBound.bottom();
+            //spansToEnd = rect.bottom() == viewBound.bottom();
           }
         }
       } else {
@@ -2715,13 +2715,13 @@ void PhantomStyle::drawControl(ControlElement element,
       if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
         alignment |= Qt::TextHideMnemonic;
       
-    QPalette::ColorRole textRole =
-        isSelected ? QPalette::HighlightedText : QPalette::Text;
-    proxy()->drawItemText(painter, textRect, alignment, mbi->palette,
-                          mbi->state & State_Enabled, mbi->text, textRole);
+      QPalette::ColorRole textRole =
+          isSelected ? QPalette::HighlightedText : QPalette::Text;
+      proxy()->drawItemText(painter, textRect, alignment, mbi->palette,
+                            mbi->state & State_Enabled, mbi->text, textRole);
     }
     if (isSelected)
-      break;
+        break;
     if (Phantom::hasTweakTrue(widget, Phantom::Tweak::menubar_no_ruler))
       break;
     if (!isSelected) {
@@ -4423,8 +4423,10 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
   case CT_MenuBarItem: {
     int fontHeight = option ? option->fontMetrics.height() : size.height();
     int w = (int)((qreal)fontHeight * Ph::MenuBar_HorizontalPaddingFontRatio);
-    int h = (int)((qreal)fontHeight * Ph::MenuBar_VerticalPaddingFontRatio);
-    int line = (int)Ph::dpiScaled(1);
+    int h = (int)((qreal)fontHeight * Ph::MenuBar_VerticalPaddingFontRatio);    
+    int line = 0;
+    if (!Phantom::hasTweakTrue(widget, Phantom::Tweak::menubar_no_ruler))
+        line = (int)Ph::dpiScaled(1);
     return QSize(size.width() + w * 2, size.height() + h * 2 + line);
   }
 #endif
