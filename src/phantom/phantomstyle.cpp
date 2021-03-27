@@ -383,7 +383,7 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
           .sample(0.3);
   colors[S_highlight_hover] =
       Grad(colors[S_base], pal.color(QPalette::Highlight))
-          .sample(0.15);
+          .sample(0.05);
   colors[S_highlightedText] = pal.color(QPalette::HighlightedText);
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
   colors[S_window_outline] = Dc::adjustLightness(
@@ -399,7 +399,8 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
           ? Dc::adjustLightness(colors[S_window_outline], 0.06)
           : colors[S_window_outline];
   colors[S_button_specular] = Dc::specularOf(colors[S_button]);
-  colors[S_button_pressed] = Dc::pressedOf(colors[S_highlight_on]);
+  colors[S_button_pressed] =
+      Grad(colors[S_base], pal.color(QPalette::Highlight)).sample(0.5);
   colors[S_button_pressed_specular] = Dc::specularOf(colors[S_button_pressed]);
   colors[S_base_shadow] = pal.color(QPalette::Shadow);
   colors[S_base_divider] = pal.color(QPalette::Midlight);
@@ -1731,8 +1732,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool isDown = option->state & State_Sunken;
     bool isOn = option->state & State_On;
     bool hasFocus = (option->state & State_HasFocus &&
-                     option->state & State_KeyboardFocusChange) ||
-                    option->state & State_MouseOver;
+                     option->state & State_KeyboardFocusChange) || option->state & State_MouseOver;
     qreal rounding = Ph::ToolButton_Rounding;
     if (widget && widget->parent() && widget->parent()->inherits("QToolBar"))
       rounding = Ph::ToolBarButton_Rounding;
@@ -1749,9 +1749,12 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       outline = S_highlight;
     } else if (hasFocus) {
       fill = S_highlight_hover;
+      if (widget && widget->autoFillBackground()) {
+        fill = S_button_specular;
+      }
     }
     if (hasFocus) {
-      outline = S_highlight_outline;
+      outline = S_frame_outline;
     }
     QRect r = option->rect;
     Ph::PSave save(painter);
@@ -2052,7 +2055,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       specular = S_button_pressed_specular;
     } else if (isOn) {
       fill = S_highlight_on;
-      specular = S_button_pressed_specular;
+      specular = S_none;
       outline = S_highlight;
     } else if (hasFocus) {
       fill = S_highlight_hover;
