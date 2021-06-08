@@ -156,7 +156,7 @@ static const bool MenuBarLeftMargin = false;
 static const bool AllowToolBarAutoRaise = true;
 // Note that this only applies to the disclosure etc. decorators in tree views.
 static const bool ShowItemViewDecorationSelected = false;
-static const bool UseQMenuForComboBoxPopup = false;
+static const bool UseQMenuForComboBoxPopup = true;
 static const bool ItemView_UseFontHeightForDecorationSize = true;
 static const bool BorderSpecularOnPanelButton = false;
 static const bool BorderSpecularOnFrameTab = false;
@@ -4445,11 +4445,11 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
     int fontMetricsHeight = -1;
     // See notes at CE_MenuItem and SH_ComboBox_Popup for more information
 #if QT_CONFIG(combobox)
-    if (Ph::UseQMenuForComboBoxPopup &&
-        qobject_cast<const QComboBox*>(widget)) {
-      if (!widget->testAttribute(Qt::WA_SetFont))
-        fontMetricsHeight = QFontMetrics(qApp->font("QMenu")).height();
-    }
+//     if (Ph::UseQMenuForComboBoxPopup &&
+//         qobject_cast<const QComboBox*>(widget)) {
+//       if (!widget->testAttribute(Qt::WA_SetFont))
+//         fontMetricsHeight = QFontMetrics(qApp->font("QMenu")).height();
+//     }
 #endif
     if (fontMetricsHeight == -1) {
       fontMetricsHeight = option->fontMetrics.height();
