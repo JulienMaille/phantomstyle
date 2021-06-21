@@ -400,7 +400,7 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
           : colors[S_window_outline];
   colors[S_button_specular] = Dc::specularOf(colors[S_button]);
   colors[S_button_pressed] =
-      Grad(colors[S_base], pal.color(QPalette::Highlight)).sample(0.5);
+      Grad(colors[S_base], pal.color(QPalette::Highlight)).sample(0.95);
   colors[S_button_pressed_specular] = Dc::specularOf(colors[S_button_pressed]);
   colors[S_base_shadow] = pal.color(QPalette::Shadow);
   colors[S_base_divider] = pal.color(QPalette::Midlight);
@@ -1526,7 +1526,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
 
       QColor highlight = option->palette.color(cg, QPalette::Highlight);
       if (vopt->state & QStyle::State_Selected && qobject_cast<const QListView*>(widget))
-        highlight.setAlpha(128);
+        highlight.setAlpha(128); //bof
       else if (vopt->state & QStyle::State_MouseOver)
         highlight.setAlpha(56);
 
@@ -2768,9 +2768,6 @@ void PhantomStyle::drawControl(ControlElement element,
     if (isSelected) {
       QColor fillColor =
           swatch.color(isSunken ? S_highlight_outline : S_highlight);
-      if (isSelected)
-        fillColor.setAlpha(56);
-
       painter->fillRect(option->rect, fillColor);
     }
     
@@ -2821,7 +2818,7 @@ void PhantomStyle::drawControl(ControlElement element,
         // if ((isChecked && !isSunken) || (!isChecked && isSunken)) {
         if (isChecked) {
           Ph::drawCheck(painter, d->checkBox_pen_scratch, checkRect, swatch,
-                        S_windowText);
+                        isSelected ? S_highlightedText : S_windowText);
         }
       }
     }
@@ -2873,7 +2870,10 @@ void PhantomStyle::drawControl(ControlElement element,
 #if 0
       painter->save();
 #endif
-      painter->setPen(swatch.pen(S_text));
+      if (isSelected)
+        painter->setPen(swatch.pen(S_highlightedText));
+      else
+        painter->setPen(swatch.pen(S_text));
 
       // Comment from original Qt code which did some dance with the font:
       //
