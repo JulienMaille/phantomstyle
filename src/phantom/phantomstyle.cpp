@@ -1538,10 +1538,8 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
         cg = QPalette::Inactive;
 
       QColor highlight = option->palette.color(cg, QPalette::Highlight);
-      if (vopt->state & QStyle::State_Selected && qobject_cast<const QListView*>(widget))
-        highlight.setAlpha(128); //bof
-      else if (vopt->state & QStyle::State_MouseOver)
-        highlight.setAlpha(56);
+      if (vopt->state & QStyle::State_MouseOver)
+        highlight.setAlpha(128);
 
       if (vopt->showDecorationSelected &&
             (vopt->state & QStyle::State_Selected ||
