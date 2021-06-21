@@ -367,6 +367,7 @@ using PhSwatchCache = QVarLengthArray<PhCacheEntry, Num_ColorCacheEntries>;
 Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   using namespace SwatchColors;
   namespace Dc = DeriveColors;
+  const bool isEnabled = pal.currentColorGroup() != QPalette::Disabled;
   QColor colors[Num_SwatchColors];
   colors[S_none] = QColor();
 
@@ -386,10 +387,17 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
           .sample(0.05);
   colors[S_highlightedText] = pal.color(QPalette::HighlightedText);
   colors[S_scrollbarGutter] = Dc::gutterColorOf(pal);
+  // There's a chance that some widgets won't redraw when changing to and from
+  // the disabled state, causing the outline color in the frame buffer to be
+  // out of sync with what it should be. If we notice this problem, we can get
+  // rid of conditional color branching and try to do it some other way.
   colors[S_window_outline] = Dc::adjustLightness(
-      colors[S_button],
-      Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)) ? 0.0 : -0.1);
-  colors[S_window_specular] = Dc::specularOf(colors[S_window]);
+      colors[S_button], Dc::hack_isVeryDarkCol(pal.color(QPalette::Window))
+                        ? 0.0
+                        : isEnabled ? -0.1
+                                    : -0.07);
+  colors[S_window_specular] =
+      isEnabled ? Dc::specularOf(colors[S_window]) : colors[S_window];
   colors[S_window_divider] = Dc::dividerColor(colors[S_window]);
   colors[S_window_lighter] = Dc::lightShadeOf(colors[S_window]);
   colors[S_window_darker] = Dc::darkShadeOf(colors[S_window]);
@@ -398,22 +406,27 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
        Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)))
           ? Dc::adjustLightness(colors[S_window_outline], 0.06)
           : colors[S_window_outline];
-  colors[S_button_specular] = Dc::specularOf(colors[S_button]);
+  colors[S_button_specular] =
+      isEnabled ? Dc::specularOf(colors[S_button]) : colors[S_button];
   colors[S_button_pressed] =
       Grad(colors[S_base], pal.color(QPalette::Highlight)).sample(0.95);
-  colors[S_button_pressed_specular] = Dc::specularOf(colors[S_button_pressed]);
+  colors[S_button_pressed_specular] =
+      isEnabled ? Dc::specularOf(colors[S_button_pressed])
+                : colors[S_button_pressed];
   colors[S_base_shadow] = pal.color(QPalette::Shadow);
   colors[S_base_divider] = pal.color(QPalette::Midlight);
   colors[S_windowText_disabled] =
       pal.color(QPalette::Disabled, QPalette::WindowText);
   colors[S_highlight_outline] = colors[S_highlight];
-  colors[S_highlight_specular] = Dc::specularOf(colors[S_highlight]);
+  colors[S_highlight_specular] =
+      isEnabled ? Dc::specularOf(colors[S_highlight]) : colors[S_highlight];
   colors[S_progressBar_outline] = Dc::progressBarOutlineColorOf(pal);
   colors[S_inactiveTabYesFrame] =
       Dc::inactiveTabFillColorOf(colors[S_tabFrame]);
   colors[S_inactiveTabNoFrame] = Dc::inactiveTabFillColorOf(colors[S_window]);
   colors[S_inactiveTabYesFrame_specular] =
-      Dc::specularOf(colors[S_inactiveTabYesFrame]);
+      isEnabled ? Dc::specularOf(colors[S_inactiveTabYesFrame])
+                : colors[S_inactiveTabYesFrame];
   colors[S_inactiveTabNoFrame_specular] =
       Dc::specularOf(colors[S_inactiveTabNoFrame]);
   colors[S_indicator_current] = Dc::indicatorColorOf(pal, QPalette::Current);
