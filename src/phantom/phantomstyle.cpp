@@ -1427,14 +1427,14 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
   }
   case PE_FrameDockWidget: {
     painter->save();
-    QColor softshadow = option->palette.background().color().darker(120);
+    QColor softshadow = option->palette.window().color().darker(120);
     QRect r = option->rect;
     painter->setPen(softshadow);
     painter->drawRect(r.adjusted(0, 0, -1, -1));
     painter->setPen(QPen(option->palette.light(), 1));
     painter->drawLine(QPoint(r.left() + 1, r.top() + 1),
                       QPoint(r.left() + 1, r.bottom() - 1));
-    painter->setPen(QPen(option->palette.background().color().darker(120)));
+    painter->setPen(QPen(option->palette.window().color().darker(120)));
     painter->drawLine(QPoint(r.left() + 1, r.bottom() - 1),
                       QPoint(r.right() - 2, r.bottom() - 1));
     painter->drawLine(QPoint(r.right() - 1, r.top() + 1),
@@ -3423,14 +3423,14 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
                                       : outline.darker(110));
     QColor titleBarHighlight(active
                                  ? highlight.lighter(120)
-                                 : palette.background().color().lighter(120));
+                                 : palette.window().color().lighter(120));
     QColor textColor(active ? 0xffffff : 0xff000000);
     QColor textAlphaColor(active ? 0xffffff : 0xff000000);
 
     {
       // Fill title
       QColor titlebarColor =
-          QColor(active ? highlight : palette.background().color());
+          QColor(active ? highlight : palette.window().color());
       painter->fillRect(option->rect.adjusted(1, 1, -1, 0), titlebarColor);
       // Frame and rounded corners
       painter->setPen(titleBarFrameBorder);
@@ -5146,7 +5146,7 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
   case SH_PrintDialog_RightAlignButtons:
   case SH_FontDialog_SelectAssociatedText:
   case SH_ComboBox_ListMouseTracking:
-  case SH_ScrollBar_StopMouseOverSlider:
+  case SH_Slider_StopMouseOverSlider:
   case SH_ScrollBar_MiddleClickAbsolutePosition:
   case SH_TitleBar_AutoRaise:
   case SH_TitleBar_NoBorder:
