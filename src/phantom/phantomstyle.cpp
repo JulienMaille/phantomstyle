@@ -233,16 +233,12 @@ QColor lightShadeOf(const QColor& underlying) {
 QColor darkShadeOf(const QColor& underlying) {
   return adjustLightness(underlying, -0.07);
 }
-QColor overhangShadowOf(const QColor& underlying) {
-  return adjustLightness(underlying, -0.05);
-}
 QColor sliderGutterShadowOf(const QColor& underlying) {
   return adjustLightness(underlying, -0.01);
 }
 QColor specularOf(const QColor& underlying) {
   return adjustLightness(underlying, 0.03);
 }
-QColor pressedOf(const QColor& color) { return adjustLightness(color, -0.02); }
 QColor indicatorColorOf(const QPalette& palette,
                         QPalette::ColorGroup group = QPalette::Current) {
   return Grad(palette.color(group, QPalette::WindowText),
@@ -1555,8 +1551,6 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
 
         if (vopt->state & QStyle::State_Selected ||
             vopt->state & QStyle::State_MouseOver) {
-          QRect textRect =
-              subElementRect(QStyle::SE_ItemViewItemText, option, widget);
           painter->fillRect(vopt->rect, QBrush(highlight));
         }
       }
@@ -2702,9 +2696,6 @@ void PhantomStyle::drawControl(ControlElement element,
     painter->fillRect(r, swatch.color(fill));
 
     if (!mbi->icon.isNull()) {
-      const auto metrics =
-          Ph::MenuItemMetrics::ofFontHeight(option->fontMetrics.height());
-
       QIcon::Mode mode =
           mbi->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
       QIcon::State state = mbi->state & State_On ? QIcon::On : QIcon::Off;
