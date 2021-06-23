@@ -1534,8 +1534,6 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
         cg = QPalette::Inactive;
 
       QColor highlight = option->palette.color(cg, QPalette::Highlight);
-      if (vopt->state & QStyle::State_MouseOver)
-        highlight.setAlpha(128);
 
       if (vopt->showDecorationSelected &&
             (vopt->state & QStyle::State_Selected ||
@@ -1549,8 +1547,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
           painter->setBrushOrigin(oldBO);
         }
 
-        if (vopt->state & QStyle::State_Selected ||
-            vopt->state & QStyle::State_MouseOver) {
+        if (vopt->state & QStyle::State_Selected) {
           painter->fillRect(vopt->rect, QBrush(highlight));
         }
       }
