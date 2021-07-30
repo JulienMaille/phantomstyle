@@ -4271,6 +4271,8 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     val = 24;
     break;
   case PM_ScrollBarExtent:
+    val = QFontMetrics(qApp->font()).height() - 2;
+    break;
   case PM_SliderThickness:
   case PM_SliderLength:
     val = QFontMetrics(qApp->font()).height()+2;
