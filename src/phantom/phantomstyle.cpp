@@ -123,6 +123,7 @@ static const qreal SliderHandle_Rounding = 0.0;
 static const qreal SliderGroove_Rounding = 0.0;
 
 static const qreal CheckMark_WidthOfHeightScale = 1.0;
+static const qreal VLine_WidthOfCheckMarkScale = 0.2;
 static const qreal PushButton_HorizontalPaddingFontHeightRatio = 1.0 / 2.0;
 static const qreal TabBar_HPaddingFontRatio = 1.25;
 static const qreal TabBar_VPaddingFontRatio = 1.0 / 1.25;
@@ -784,6 +785,18 @@ QRect menuItemCheckRect(const MenuItemMetrics& metrics,
   r.adjust(checkRightSpace, checkVMargin, checkRightSpace, -checkVMargin);
   return QStyle::visualRect(direction, itemRect, r) & itemRect;
 }
+QRect menuItemVLineRect(const MenuItemMetrics& metrics,
+                        Qt::LayoutDirection direction, QRect itemRect,
+                        bool hasArrow) {
+  QRect r = menuItemContentRect(metrics, itemRect, hasArrow);
+  int checkVMargin = (int)((qreal)metrics.fontHeight *
+                           MenuItem_CheckMarkVerticalInsetFontRatio);
+  if (checkVMargin < 0)
+    checkVMargin = 0;
+  //r.setSize(QSize(metrics.iconRightSpace, itemRect.height()));
+  //r.adjust(0, checkVMargin, 0, -checkVMargin);
+  return QStyle::visualRect(direction, itemRect, r) & itemRect;
+}
 QRect menuItemIconRect(const MenuItemMetrics& metrics,
                        Qt::LayoutDirection direction, QRect itemRect,
                        bool hasArrow, bool hasCheck) {
@@ -1133,6 +1146,37 @@ Q_NEVER_INLINE void drawCheck(QPainter* painter, QPen& scratchPen,
   painter->setPen(scratchPen);
   painter->setBrush(Qt::NoBrush);
   painter->drawPolyline(points, 3);
+}
+
+Q_NEVER_INLINE void drawVLine(QPainter* painter, QPen& scratchPen,
+                              const QRectF& r, const PhSwatch& swatch,
+                              const QBrush& color) {
+  using namespace Phantom::SwatchColors;
+  qreal rx, ry, rw, rh;
+  QRectF(r).getRect(&rx, &ry, &rw, &rh);
+  qreal penWidth = 0.2 * qMin(rw, rh);
+  qreal dimx = rw - penWidth;
+  qreal dimy = rh - penWidth;
+  if (dimx < 0.5 || dimy < 0.5)
+    return;
+  qreal x = (rw - dimx) / 2 + rx;
+  qreal y = (rh - dimy) / 2 + ry;
+  QPointF p1(0.5, 0.0), p2(0.5, 1.0);
+  p1.setX(p1.x() * dimx + x);
+  p2.setX(p2.x() * dimx + x);
+  p1.setY(p1.y() * dimy + y);
+  p2.setY(p2.y() * dimy + y);
+
+  scratchPen.setBrush(color);
+  scratchPen.setCapStyle(Qt::RoundCap);
+  scratchPen.setJoinStyle(Qt::RoundJoin);
+  scratchPen.setWidthF(penWidth);
+  Phantom::PSave save(painter);
+  if (!painter->testRenderHint(QPainter::Antialiasing))
+    painter->setRenderHint(QPainter::Antialiasing);
+  painter->setPen(scratchPen);
+  painter->setBrush(Qt::NoBrush);
+  painter->drawLine(p1, p2);
 }
 
 Q_NEVER_INLINE void drawHyphen(QPainter* painter, QPen& scratchPen,
@@ -1539,7 +1583,7 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
 
       QColor highlight = option->palette.color(cg, QPalette::Highlight);
       if (vopt->state & QStyle::State_MouseOver)
-        highlight.setAlpha(128);
+        highlight.setAlpha(64);
 
       if (vopt->showDecorationSelected &&
             (vopt->state & QStyle::State_Selected ||
@@ -2787,9 +2831,9 @@ void PhantomStyle::drawControl(ControlElement element,
     if (isCheckable) {
       // Note: check rect might be misaligned vertically if it's a menu from a
       // combo box. Probably a bug in Qt code?
-      QRect checkRect =
-       Ph::menuItemCheckRect(metrics, option->direction, itemRect, hasSubMenu,
-                             !Ph::MenuItem_ShowCheckOnItemsWithIcons);
+      QRect checkRect = Ph::menuItemCheckRect(
+            metrics, option->direction, itemRect, hasSubMenu,
+            !Ph::MenuItem_ShowCheckOnItemsWithIcons);
 
       if (hasIcon && !Ph::MenuItem_ShowCheckOnItemsWithIcons) {
         // Rectangle below icon
@@ -2828,8 +2872,13 @@ void PhantomStyle::drawControl(ControlElement element,
         //
         // if ((isChecked && !isSunken) || (!isChecked && isSunken)) {
         if (isChecked) {
-          Ph::drawCheck(painter, d->checkBox_pen_scratch, checkRect, swatch,
-                        isSelected ? S_highlightedText : S_windowText);
+          if (auto combo = qobject_cast<const QComboBox*>(widget)) {
+            Ph::drawVLine(painter, d->checkBox_pen_scratch, checkRect, swatch,
+                          combo->palette().highlight());
+          } else {
+            Ph::drawCheck(painter, d->checkBox_pen_scratch, checkRect, swatch,
+                          isSelected ? S_highlightedText : S_windowText);
+          }
         }
       }
     }
