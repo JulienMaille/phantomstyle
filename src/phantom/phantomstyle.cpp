@@ -1151,6 +1151,7 @@ Q_NEVER_INLINE void drawCheck(QPainter* painter, QPen& scratchPen,
 Q_NEVER_INLINE void drawVLine(QPainter* painter, QPen& scratchPen,
                               const QRectF& r, const PhSwatch& swatch,
                               const QBrush& color) {
+  Q_UNUSED(swatch);
   using namespace Phantom::SwatchColors;
   qreal rx, ry, rw, rh;
   QRectF(r).getRect(&rx, &ry, &rw, &rh);
