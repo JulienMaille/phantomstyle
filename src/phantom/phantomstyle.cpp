@@ -4669,13 +4669,11 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
     auto hdr = qstyleoption_cast<const QStyleOptionHeader*>(option);
     if (!hdr)
       break;
-    // This is pretty crummy. Should also check if we need multi-line support
-    // or not.
+    // This is pretty crummy.
     bool nullIcon = hdr->icon.isNull();
     int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
     int iconSize = nullIcon ? 0 : option->fontMetrics.height();
-    QSize txt = hdr->fontMetrics.size(
-        Qt::TextSingleLine | Qt::TextBypassShaping, hdr->text);
+    QSize txt = hdr->fontMetrics.size(Qt::TextBypassShaping, hdr->text);
     QSize sz;
     sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
     sz.setWidth((nullIcon ? 0 : margin) + iconSize +
