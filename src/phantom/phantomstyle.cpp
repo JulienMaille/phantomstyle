@@ -165,6 +165,7 @@ static const bool BorderSpecularOnComboBox = false;
 static const bool BorderSpecularOnProgressBar = false;
 static const bool BorderSpecularOnScrollBar = false;
 static const bool GroupBoxLabelOnFrame = true;
+static const bool HeaderSection_DrawGridLine = false;
 
 // Whether or not the non-raised tabs in a tab bar have shininess/highlights to
 // them. Setting this to false adds an extra visual hint for distinguishing
@@ -2540,7 +2541,8 @@ void PhantomStyle::drawControl(ControlElement element,
     }
     QRect bgRect = Ph::expandRect(rect, edges, -1);
     painter->fillRect(bgRect, swatch.color(S_window));
-    Ph::fillRectEdges(painter, rect, edges, 1, swatch.color(S_window_outline));
+    if (Ph::HeaderSection_DrawGridLine)
+        Ph::fillRectEdges(painter, rect, edges, 1, swatch.color(S_window_outline));
     break;
   }
   case CE_HeaderLabel: {
