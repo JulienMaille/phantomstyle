@@ -106,7 +106,7 @@ enum {
   SplitterMaxLength = 100, // Length of splitter handle (not thickness)
 
   // These two are currently not based on font, but could be
-  LineEdit_ContentsHPad = 2,
+  LineEdit_ContentsHPad = 0,
   ComboBox_NonEditable_ContentsHPad = 4,
 };
 
