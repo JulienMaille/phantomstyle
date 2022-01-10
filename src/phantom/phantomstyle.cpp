@@ -1770,18 +1770,18 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
 
   case PE_IndicatorToolBarSeparator: {
     QRect r = option->rect;
+    QColor c =
+        Phantom::DeriveColors::dividerColor(widget->palette().window().color());
     if (option->state & State_Horizontal) {
       if (r.height() >= 10)
         r.adjust(0, 3, 0, -3);
       r.setWidth(r.width() / 2 + 1);
-      Ph::fillRectEdges(painter, r, Qt::RightEdge, 1,
-                        swatch.color(S_window_divider));
+      Ph::fillRectEdges(painter, r, Qt::RightEdge, 1, c);
     } else {
       if (r.width() >= 10)
         r.adjust(3, 0, -3, 0);
       r.setHeight(r.height() / 2 + 1);
-      Ph::fillRectEdges(painter, r, Qt::BottomEdge, 1,
-                        swatch.color(S_window_divider));
+      Ph::fillRectEdges(painter, r, Qt::BottomEdge, 1, c);
     }
     break;
   }
