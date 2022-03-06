@@ -4283,14 +4283,7 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
     break;
   case PM_ButtonDefaultIndicator:
   case PM_ButtonShiftHorizontal:
-    val = 0;
-    break;
   case PM_ButtonShiftVertical:
-#if QT_CONFIG(toolbutton)
-    if (qobject_cast<const QToolButton*>(widget)) {
-      return 0;
-    }
-#endif
     val = 0;
     break;
   case PM_DefaultFrameWidth:
