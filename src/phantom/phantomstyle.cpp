@@ -166,6 +166,7 @@ static const bool BorderSpecularOnProgressBar = false;
 static const bool BorderSpecularOnScrollBar = false;
 static const bool GroupBoxLabelOnFrame = true;
 static const bool HeaderSection_DrawGridLine = false;
+static const bool ScrollAreaModern = true;
 
 // Whether or not the non-raised tabs in a tab bar have shininess/highlights to
 // them. Setting this to false adds an extra visual hint for distinguishing
@@ -3790,9 +3791,12 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
     bool scrollBarGrooveShown = scrollBar->subControls & SC_ScrollBarGroove;
     bool isEnabled = scrollBar->state & State_Enabled;
     bool hasRange = scrollBar->minimum != scrollBar->maximum;
+    bool hasFocus = (option->state & State_HasFocus &&
+                     option->state & State_KeyboardFocusChange) ||
+                    option->state & State_MouseOver;
 
     // Groove/gutter/trench area
-    if (scrollBarGrooveShown) {
+    if (scrollBarGrooveShown && !Ph::ScrollAreaModern) {
       QRect r = scrollBarGroove;
       Qt::Edges edges;
       if (isHorizontal) {
@@ -3809,15 +3813,16 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       }
       Swatchy grooveColor =
           isEnabled ? S_scrollbarGutter : S_scrollbarGutter_disabled;
+      
       // Top or left dark edge
       Ph::fillRectEdges(painter, scrollBarGroove, edges, 1,
-                        swatch.color(S_window_outline));
+                          swatch.color(S_window_outline));
       // Ring shadow
       if (Ph::ScrollbarShadows && isEnabled) {
-        for (int i = 0; i < Ph::Num_ShadowSteps; ++i) {
+          for (int i = 0; i < Ph::Num_ShadowSteps; ++i) {
           Ph::fillRectOutline(painter, r, 1, swatch.scrollbarShadowColors[i]);
           r.adjust(1, 1, -1, -1);
-        }
+          }
       }
       // General BG fill
       painter->fillRect(r, swatch.color(grooveColor));
@@ -3884,10 +3889,12 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
           }
         }
       }
+    } else {
+      painter->fillRect(scrollBarGroove, swatch.color(S_window));
     }
 
     // Slider thumb
-    if (scrollBar->subControls & SC_ScrollBarSlider) {
+    if (scrollBar->subControls & SC_ScrollBarSlider && !Ph::ScrollAreaModern) {
       Swatchy thumbFill, thumbSpecular;
       if (isSunken && scrollBar->activeSubControls & SC_ScrollBarSlider) {
         thumbFill = S_button_pressed;
@@ -3922,48 +3929,68 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       if (thumbSpecular && Ph::BorderSpecularOnScrollBar) {
         Ph::fillRectOutline(painter, mainRect, 1, swatch.color(thumbSpecular));
       }
+    } else {
+      float scale = hasFocus ? 0.25f : 0.4f;
+      QRect r = scrollBarSlider;
+      if (isHorizontal) {
+        float h = r.height() * scale;
+        //r.setY(r.y() + (r.height() - h) / 2);
+        //r.setHeight(h);
+        r.adjust(0, h + 1, 0, -h);
+      } else {
+        float w = r.width() * scale;
+        r.adjust(w, 0, -w, 0);
+        //r.setX(r.x() + (r.width() - w) / 2);
+        //r.setWidth(w);
+      }
+      Ph::paintSolidRoundRect(painter, r, hasFocus ? 4 : 1, swatch,
+                              S_base_shadow);
     }
 
     // The SubLine (up/left) buttons
     if (scrollBar->subControls & SC_ScrollBarSubLine) {
-      Swatchy fill, specular;
-      if (isSunken && scrollBar->activeSubControls & SC_ScrollBarSubLine) {
-        fill = S_button_pressed;
-        specular = S_button_pressed_specular;
-      } else if (hasRange) {
-        fill = S_button;
-        specular = S_button_specular;
-      } else {
-        fill = S_window;
-        specular = S_none;
-      }
-
       QRect btnRect = scrollBarSubLine;
       QRect bgRect = btnRect;
-      Qt::Edges edges;
-      if (isHorizontal) {
-        if (isLeftToRight) {
-          edges = Qt::TopEdge | Qt::RightEdge;
-          bgRect.adjust(0, 1, -1, 0);
+      if (!Ph::ScrollAreaModern) {
+        Swatchy fill, specular;
+        if (isSunken && scrollBar->activeSubControls & SC_ScrollBarSubLine) {
+          fill = S_button_pressed;
+          specular = S_button_pressed_specular;
+        } else if (hasRange) {
+          fill = S_button;
+          specular = S_button_specular;
         } else {
-          edges = Qt::LeftEdge | Qt::TopEdge;
-          bgRect.adjust(1, 1, 0, 0);
+          fill = S_window;
+          specular = S_none;
+        }
+
+        Qt::Edges edges;
+        if (isHorizontal) {
+          if (isLeftToRight) {
+            edges = Qt::TopEdge | Qt::RightEdge;
+            bgRect.adjust(0, 1, -1, 0);
+          } else {
+            edges = Qt::LeftEdge | Qt::TopEdge;
+            bgRect.adjust(1, 1, 0, 0);
+          }
+        } else {
+          if (isLeftToRight) {
+            edges = Qt::LeftEdge | Qt::BottomEdge;
+            bgRect.adjust(1, 0, 0, -1);
+          } else {
+            edges = Qt::RightEdge | Qt::BottomEdge;
+            bgRect.adjust(0, 0, -1, -1);
+          }
+        }
+        // Outline, fill, specular
+        Ph::fillRectEdges(painter, btnRect, edges, 1,
+                          swatch.color(S_window_outline));
+        painter->fillRect(bgRect, swatch.color(fill));
+        if (specular && Ph::BorderSpecularOnScrollBar) {
+          Ph::fillRectOutline(painter, bgRect, 1, swatch.color(specular));
         }
       } else {
-        if (isLeftToRight) {
-          edges = Qt::LeftEdge | Qt::BottomEdge;
-          bgRect.adjust(1, 0, 0, -1);
-        } else {
-          edges = Qt::RightEdge | Qt::BottomEdge;
-          bgRect.adjust(0, 0, -1, -1);
-        }
-      }
-      // Outline, fill, specular
-      Ph::fillRectEdges(painter, btnRect, edges, 1,
-                        swatch.color(S_window_outline));
-      painter->fillRect(bgRect, swatch.color(fill));
-      if (specular && Ph::BorderSpecularOnScrollBar) {
-        Ph::fillRectOutline(painter, bgRect, 1, swatch.color(specular));
+        painter->fillRect(bgRect, swatch.color(S_window));
       }
 
       // Arrows
@@ -3974,39 +4001,49 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
         arrowType = Qt::UpArrow;
       }
       int adj = qMin(bgRect.width(), bgRect.height()) / 4;
-      Ph::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj), arrowType,
+      if (!Ph::ScrollAreaModern) {
+        Ph::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj), arrowType,
                     swatch, hasRange);
+      } else if (hasRange && hasFocus) {
+        Phantom::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj),
+                           arrowType, swatch.brush(S_base_shadow));
+      }
     }
 
     // The AddLine (down/right) button
     if (scrollBar->subControls & SC_ScrollBarAddLine) {
-      Swatchy fill, specular;
-      if (isSunken && scrollBar->activeSubControls & SC_ScrollBarAddLine) {
-        fill = S_button_pressed;
-        specular = S_button_pressed_specular;
-      } else if (hasRange) {
-        fill = S_button;
-        specular = S_button_specular;
-      } else {
-        fill = S_window;
-        specular = S_none;
-      }
       QRect btnRect = scrollBarAddLine;
       QRect bgRect = btnRect;
-      Qt::Edges edges;
-      if (isLeftToRight) {
-        edges = Qt::LeftEdge | Qt::TopEdge;
-        bgRect.adjust(1, 1, 0, 0);
+      if (!Ph::ScrollAreaModern) {
+        Swatchy fill, specular;
+        if (isSunken && scrollBar->activeSubControls & SC_ScrollBarAddLine) {
+          fill = S_button_pressed;
+          specular = S_button_pressed_specular;
+        } else if (hasRange) {
+          fill = S_button;
+          specular = S_button_specular;
+        } else {
+          fill = S_window;
+          specular = S_none;
+        }
+        Qt::Edges edges;
+        if (isLeftToRight) {
+          edges = Qt::LeftEdge | Qt::TopEdge;
+          bgRect.adjust(1, 1, 0, 0);
+        } else {
+          edges = Qt::TopEdge | Qt::RightEdge;
+          bgRect.adjust(0, 1, -1, 0);
+        }
+        // Outline, fill, specular
+        if (!Ph::ScrollAreaModern)
+          Ph::fillRectEdges(painter, btnRect, edges, 1,
+                            swatch.color(S_window_outline));
+        painter->fillRect(bgRect, swatch.color(fill));
+        if (specular && Ph::BorderSpecularOnScrollBar) {
+          Ph::fillRectOutline(painter, bgRect, 1, swatch.color(specular));
+        }
       } else {
-        edges = Qt::TopEdge | Qt::RightEdge;
-        bgRect.adjust(0, 1, -1, 0);
-      }
-      // Outline, fill, specular
-      Ph::fillRectEdges(painter, btnRect, edges, 1,
-                        swatch.color(S_window_outline));
-      painter->fillRect(bgRect, swatch.color(fill));
-      if (specular && Ph::BorderSpecularOnScrollBar) {
-        Ph::fillRectOutline(painter, bgRect, 1, swatch.color(specular));
+        painter->fillRect(bgRect, swatch.color(S_window));
       }
 
       // Arrows
@@ -4017,8 +4054,13 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
         arrowType = Qt::DownArrow;
       }
       int adj = qMin(bgRect.width(), bgRect.height()) / 4;
-      Ph::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj), arrowType,
-                    swatch, hasRange);
+      if (!Ph::ScrollAreaModern) {
+        Ph::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj), arrowType,
+                      swatch, hasRange);
+      } else if (hasRange && hasFocus) {
+        Phantom::drawArrow(painter, bgRect.adjusted(adj, adj, -adj, -adj),
+                           arrowType, swatch.brush(S_base_shadow));
+      }
     }
     break;
   }
@@ -4773,7 +4815,7 @@ void PhantomStyle::polish(QApplication* app) { QCommonStyle::polish(app); }
 void PhantomStyle::polish(QWidget* widget) {
   QCommonStyle::polish(widget);
   // Leaving this code here to debug/remove hover stuff if necessary
-#if 0
+#if 1
   if (false
 #if QT_CONFIG(abstractbutton)
       || qobject_cast<QAbstractButton*>(widget)
@@ -4809,7 +4851,7 @@ void PhantomStyle::polish(QPalette& pal) { QCommonStyle::polish(pal); }
 void PhantomStyle::unpolish(QWidget* widget) {
   QCommonStyle::unpolish(widget);
   // Leaving this code here to debug/remove hover stuff if necessary
-#if 0
+#if 1
   if (false
 #if QT_CONFIG(abstractbutton)
       || qobject_cast<QAbstractButton*>(widget)
