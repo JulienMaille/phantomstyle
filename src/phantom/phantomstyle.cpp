@@ -183,6 +183,11 @@ static const bool ScrollAreaModern = true;
 // per-widget style hint associated with it.
 static const bool TabBar_InactiveTabsHaveSpecular = false;
 
+static double dpr(const QWidget* widget) {
+  auto window = widget ? widget->windowHandle() : nullptr;
+  return window ? window->devicePixelRatio() : 1.;
+}
+
 struct Grad {
   Grad(const QColor& from, const QColor& to) {
     rgbA = Rgb::ofQColor(from);
@@ -2567,9 +2572,9 @@ void PhantomStyle::drawControl(ControlElement element,
     if (!header->icon.isNull()) {
       int iconExtent =
           qMin(qMin(rect.height(), rect.width()), option->fontMetrics.height());
-      auto window = widget ? widget->window()->windowHandle() : nullptr;
+
       QPixmap pixmap = header->icon.pixmap(
-          QSize(iconExtent, iconExtent), window->devicePixelRatio(),
+          QSize(iconExtent, iconExtent), Phantom::dpr(widget),
           (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
       int pixw = (int)((qreal)pixmap.width() / pixmap.devicePixelRatio());
       QRect aligned =
@@ -2923,9 +2928,8 @@ void PhantomStyle::drawControl(ControlElement element,
         iconSize = combo->iconSize();
       }
 #endif
-      QWindow* window = widget ? widget->windowHandle() : nullptr;
-      QPixmap pixmap = menuItem->icon.pixmap(
-          iconSize, window->devicePixelRatio(), mode, state);
+      QPixmap pixmap =
+          menuItem->icon.pixmap(iconSize, Phantom::dpr(widget), mode, state);
       const int pixw = (int)(pixmap.width() / pixmap.devicePixelRatio());
       const int pixh = (int)(pixmap.height() / pixmap.devicePixelRatio());
       QRect pixmapRect = QStyle::alignedRect(option->direction, Qt::AlignCenter,
@@ -3083,9 +3087,9 @@ void PhantomStyle::drawControl(ControlElement element,
       QIcon::Mode mode =
           button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
       QIcon::State state = button->state & State_On ? QIcon::On : QIcon::Off;
-      auto window = widget ? widget->window()->windowHandle() : nullptr;
-      QPixmap pixmap = button->icon.pixmap(
-          button->iconSize, window->devicePixelRatio(), mode, state);
+
+      QPixmap pixmap = button->icon.pixmap(button->iconSize,
+                                           Phantom::dpr(widget), mode, state);
       int pixmapWidth =
           (int)((qreal)pixmap.width() / pixmap.devicePixelRatio());
       int pixmapHeight =
