@@ -2081,10 +2081,13 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     // So, if any application code is using that mode in a QTreeView, it won't
     // get special item view frames. Too bad.
 #endif
-    Ph::PSave save(painter);
-    Ph::paintBorderedRoundRect(painter, option->rect,
-                               Ph::FrameFocusRect_Rounding, swatch,
-                               S_highlight_outline, S_none);
+    // TODO: Temporarily disabled drawing focus rect,
+    // because we do not want it e.g. around
+    // check boxes, radio buttons etc.
+    //Ph::PSave save(painter);
+    //Ph::paintBorderedRoundRect(painter, option->rect,
+    //                           Ph::FrameFocusRect_Rounding, swatch,
+    //                           S_highlight_outline, S_none);
     break;
   }
   case PE_PanelButtonCommand:
