@@ -3027,7 +3027,8 @@ void PhantomStyle::drawControl(ControlElement element,
           option->direction == Qt::RightToLeft ? Qt::LeftArrow : Qt::RightArrow;
       QRect arrowRect =
           Ph::menuItemArrowRect(metrics, option->direction, itemRect);
-      Swatchy arrowColor = S_indicator_current;
+      Swatchy arrowColor = option->state & State_Selected ? S_highlightedText
+                                                          : S_indicator_current;
       Ph::drawArrow(painter, arrowRect, arrow, swatch.brush(arrowColor));
     }
     painter->restore();
