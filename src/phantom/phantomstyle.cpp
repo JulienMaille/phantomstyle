@@ -857,7 +857,7 @@ void progressBarFillRects(
     bool& outIsIndeterminate) {
   QRect ra = bar->rect;
   QRect rb = ra;
-  bool isHorizontal = bar->orientation != Qt::Vertical;
+  bool isHorizontal = bar->state & QStyle::State_Horizontal;
   bool isInverted = bar->invertedAppearance;
   bool isIndeterminate = bar->minimum == 0 && bar->maximum == 0;
   bool isForward = !isHorizontal || bar->direction != Qt::RightToLeft;
@@ -1478,14 +1478,14 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
   }
   case PE_FrameDockWidget: {
     painter->save();
-    QColor softshadow = option->palette.background().color().darker(120);
+    QColor softshadow = option->palette.window().color().darker(120);
     QRect r = option->rect;
     painter->setPen(softshadow);
     painter->drawRect(r.adjusted(0, 0, -1, -1));
     painter->setPen(QPen(option->palette.light(), 1));
     painter->drawLine(QPoint(r.left() + 1, r.top() + 1),
                       QPoint(r.left() + 1, r.bottom() - 1));
-    painter->setPen(QPen(option->palette.background().color().darker(120)));
+    painter->setPen(QPen(option->palette.window().color().darker(120)));
     painter->drawLine(QPoint(r.left() + 1, r.bottom() - 1),
                       QPoint(r.right() - 2, r.bottom() - 1));
     painter->drawLine(QPoint(r.right() - 1, r.top() + 1),
@@ -2694,7 +2694,7 @@ void PhantomStyle::drawControl(ControlElement element,
     QRect r = bar->rect.adjusted(2, 2, -2, -2);
     if (r.isEmpty() || !r.isValid())
       break;
-    QSize textSize = option->fontMetrics.size(Qt::TextBypassShaping, bar->text);
+    QSize textSize = option->fontMetrics.boundingRect(bar->text).size();
     QRect textRect = QStyle::alignedRect(option->direction, Qt::AlignCenter,
                                          textSize, option->rect);
     textRect &= r;
@@ -2926,7 +2926,7 @@ void PhantomStyle::drawControl(ControlElement element,
     }
 
     // Draw main text and mnemonic text
-    QStringRef s(&menuItem->text);
+    QStringView s(menuItem->text);
     if (!s.isEmpty()) {
       QRect textRect =
           Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu,
@@ -3008,15 +3008,15 @@ void PhantomStyle::drawControl(ControlElement element,
         QRect mnemonicR =
             Ph::menuItemMnemonicRect(metrics, option->direction, itemRect,
                                      hasSubMenu, menuItem->tabWidth);
-        const QStringRef textToDrawRef = s.mid(t + 1);
+        const QStringView textToDrawRef = s.mid(t + 1);
         const QString unsafeTextToDraw = QString::fromRawData(
-            textToDrawRef.constData(), textToDrawRef.size());
+            textToDrawRef.data(), textToDrawRef.size());
         painter->drawText(mnemonicR, text_flags, unsafeTextToDraw);
         s = s.left(t);
       }
-      const QStringRef textToDrawRef = s.left(t);
+      const QStringView textToDrawRef = s.left(t);
       const QString unsafeTextToDraw =
-          QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
+          QString::fromRawData(textToDrawRef.data(), textToDrawRef.size());
       painter->drawText(textRect, text_flags, unsafeTextToDraw);
 
 #if 0
@@ -3492,14 +3492,14 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
                                       : outline.darker(110));
     QColor titleBarHighlight(active
                                  ? highlight.lighter(120)
-                                 : palette.background().color().lighter(120));
+                                 : palette.window().color().lighter(120));
     QColor textColor(active ? 0xffffff : 0xff000000);
     QColor textAlphaColor(active ? 0xffffff : 0xff000000);
 
     {
       // Fill title
       QColor titlebarColor =
-          QColor(active ? highlight : palette.background().color());
+          QColor(active ? highlight : palette.window().color());
       painter->fillRect(option->rect.adjusted(1, 1, -1, 0), titlebarColor);
       // Frame and rounded corners
       painter->setPen(titleBarFrameBorder);
@@ -4718,7 +4718,7 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
     bool nullIcon = hdr->icon.isNull();
     int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
     int iconSize = nullIcon ? 0 : option->fontMetrics.height();
-    QSize txt = hdr->fontMetrics.size(Qt::TextBypassShaping, hdr->text);
+    QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine, hdr->text);
     QSize sz;
     sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
     sz.setWidth((nullIcon ? 0 : margin) + iconSize +
