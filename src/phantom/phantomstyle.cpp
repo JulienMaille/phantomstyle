@@ -3187,14 +3187,12 @@ void PhantomStyle::drawControl(ControlElement element,
     painter->setClipRect(shapeClipRect);
     bool hasFrame =
         tab->features & QStyleOptionTab::HasFrame && !tab->documentMode;
-    Swatchy tabFrameColor, thisFillColor, specular;
+    Swatchy tabFrameColor, specular;
     if (hasFrame) {
       tabFrameColor = S_tabFrame;
       if (isSelected) {
-        thisFillColor = S_tabFrame;
         specular = S_tabFrame_specular;
       } else {
-        thisFillColor = S_inactiveTabYesFrame;
         specular = Ph::TabBar_InactiveTabsHaveSpecular
                        ? S_inactiveTabYesFrame_specular
                        : S_none;
@@ -3202,22 +3200,28 @@ void PhantomStyle::drawControl(ControlElement element,
     } else {
       tabFrameColor = S_window;
       if (isSelected) {
-        thisFillColor = S_window;
         specular = S_window_specular;
       } else {
-        thisFillColor = S_inactiveTabNoFrame;
         specular = Ph::TabBar_InactiveTabsHaveSpecular
                        ? S_inactiveTabNoFrame_specular
                        : S_none;
       }
     }
     Ph::paintBorderedRoundRect(painter, drawRect, rounding, swatch,
-                               S_window_outline, thisFillColor);
+                               S_window_outline, tabFrameColor);
     if (Ph::BorderSpecularOnFrameTab)
       Ph::paintBorderedRoundRect(painter, drawRect.adjusted(1, 1, -1, -1),
                                  rounding, swatch, specular, S_none);
     painter->restore();
     if (isSelected) {
+      QRect highlightRect = Ph::expandRect(option->rect, outerEdge, -2);
+      highlightRect =
+          Ph::rectFromInnerEdgeWithThickness(highlightRect, outerEdge, 2);
+      highlightRect =
+          Ph::expandRect(highlightRect, edgeTowardNextTab, lastTab ? -6 : -5);
+      highlightRect = Ph::expandRect(highlightRect, edgeAwayNextTab, -6);
+      painter->fillRect(highlightRect, swatch.color(S_highlight));
+
       QRect refillRect =
           Ph::rectFromInnerEdgeWithThickness(shapeClipRect, innerEdge, 2);
       refillRect = Ph::rectTranslatedTowardEdge(refillRect, innerEdge, 2);
