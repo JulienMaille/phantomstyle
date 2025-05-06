@@ -4336,7 +4336,7 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_ButtonMargin:
     val = 6;
     break;
-  case PM_ButtonIconLabelMargin:
+  case PM_ButtonIconLabelMargin:  // this PixelMetric enum comes from our own Qt5 patch
     val = -15;
     break;
   case PM_ComboBoxFrameWidth:
