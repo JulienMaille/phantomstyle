@@ -228,7 +228,8 @@ QColor outlineOf(const QPalette& pal) {
   return adjustLightness(pal.color(QPalette::Window), isDark ? 0.1 : -0.1);
 }
 QColor gutterColorOf(const QPalette& pal) {
-  return adjustLightness(pal.color(QPalette::Button), -0.03);
+  bool isDark = hack_isVeryDarkCol(pal.color(QPalette::Window));
+  return adjustLightness(pal.color(QPalette::Button), isDark ? 0.04 : -0.02);
 }
 QColor lightShadeOf(const QColor& underlying) {
   return adjustLightness(underlying, 0.07);
@@ -245,7 +246,6 @@ QColor sliderGutterShadowOf(const QColor& underlying) {
 QColor specularOf(const QColor& underlying) {
   return adjustLightness(underlying, 0.03);
 }
-QColor pressedOf(const QColor& color) { return adjustLightness(color, -0.02); }
 QColor indicatorColorOf(const QPalette& palette,
                         QPalette::ColorGroup group = QPalette::Current) {
   return Grad(palette.color(group, QPalette::WindowText),
@@ -374,10 +374,14 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   QColor colors[Num_SwatchColors];
   colors[S_none] = QColor();
 
+  const bool isDark = Dc::hack_isVeryDarkCol(pal.color(QPalette::Base)) ||
+                      Dc::hack_isVeryDarkCol(pal.color(QPalette::Window));
+
   colors[S_window] = pal.color(QPalette::Window);
   colors[S_button] = pal.color(QPalette::Button);
   if (colors[S_button] == colors[S_window])
-    colors[S_button] = Dc::adjustLightness(colors[S_button], 0.01);
+    colors[S_button] =
+        Dc::adjustLightness(colors[S_button], isDark ? 0.05 : 0.01);
   colors[S_base] = pal.color(QPalette::Base);
   colors[S_text] = pal.color(QPalette::Text);
   colors[S_windowText] = pal.color(QPalette::WindowText);
@@ -399,16 +403,14 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
                         ? 0.0
                         : isEnabled ? -0.1
                                     : -0.07);
-  colors[S_window_specular] =
-      isEnabled ? Dc::specularOf(colors[S_window]) : colors[S_window];
+  colors[S_window_specular] = isEnabled && isDark ? colors[S_window]
+                                  : Dc::specularOf(colors[S_window]);
   colors[S_window_divider] = Dc::dividerColor(colors[S_window]);
   colors[S_window_lighter] = Dc::lightShadeOf(colors[S_window]);
   colors[S_window_darker] = Dc::darkShadeOf(colors[S_window]);
   colors[S_frame_outline] =
-      (Dc::hack_isVeryDarkCol(pal.color(QPalette::Base)) ||
-       Dc::hack_isVeryDarkCol(pal.color(QPalette::Window)))
-          ? Dc::adjustLightness(colors[S_window_outline], 0.06)
-          : colors[S_window_outline];
+      isDark ? Dc::adjustLightness(colors[S_window_outline], 0.06)
+             : colors[S_window_outline];
   colors[S_button_specular] =
       isEnabled ? Dc::specularOf(colors[S_button]) : colors[S_button];
   colors[S_button_pressed] =
@@ -420,7 +422,8 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_base_divider] = pal.color(QPalette::Midlight);
   colors[S_windowText_disabled] =
       pal.color(QPalette::Disabled, QPalette::WindowText);
-  colors[S_highlight_outline] = colors[S_highlight];
+  colors[S_highlight_outline] =
+      Dc::adjustLightness(colors[S_highlight], isDark ? 0.05 : -0.05);
   colors[S_highlight_specular] =
       isEnabled ? Dc::specularOf(colors[S_highlight]) : colors[S_highlight];
   colors[S_progressBar_outline] = Dc::progressBarOutlineColorOf(pal);
