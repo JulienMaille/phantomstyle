@@ -1088,7 +1088,7 @@ Q_NEVER_INLINE void drawArrow(QPainter* p, QRect rect,
   }
   auto oldPen = p->pen();
   bool oldAA = p->testRenderHint(QPainter::Antialiasing);
-  p->setPen(QPen(brush.color(), 1.6, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+  p->setPen(QPen(brush.color(), 1.2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
   if (!oldAA) {
     p->setRenderHint(QPainter::Antialiasing);
   }
