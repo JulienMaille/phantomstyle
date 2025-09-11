@@ -30,9 +30,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # Build type suffix for library name
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_debug")
 
-# Force Release to output into the Qt Style plugin path
+# Set output into the Qt Style plugin path
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_qt5Core_install_prefix}/plugins/styles
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG $ENV{QTDIR}/plugins/styles
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{QTDIR}/plugins/styles
 )
 
 # Link Qt libraries
@@ -40,9 +41,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::Core
     Qt::Gui
     Qt::Widgets
-)
-
-# Install plugin to Qt Style plugin path
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION ${_qt5Core_install_prefix}/plugins/styles
 )

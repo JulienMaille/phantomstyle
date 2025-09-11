@@ -502,7 +502,7 @@ Q_ALWAYS_INLINE quint64 fastfragile_hash_qpalette(const QPalette& p) {
   // guard for it, so that it will default to a more safe definition on the
   // next guaranteed big breaking change for Qt. A warning will hopefully get
   // someone to double-check it at some point in the future.
-#warning "Verify contents and layout of QPalette::cacheKey() have not changed"
+//#warning "Verify contents and layout of QPalette::cacheKey() have not changed"
   QtPrivate::QHashCombine c;
   uint h = qHash(p.currentColorGroup());
   h = c(h, (uint)(x.u & 0xFFFFFFFFu));
@@ -2928,13 +2928,20 @@ void PhantomStyle::drawControl(ControlElement element,
       painter->drawPixmap(pixmapRect.topLeft(), pixmap);
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    int tabWidth = menuItem->tabWidth;
+#else
+    int tabWidth = menuItem->reservedShortcutWidth;
+#endif
+
     // Draw main text and mnemonic text
     QStringView s(menuItem->text);
     if (!s.isEmpty()) {
       QRect textRect =
           Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu,
                                hasIcon, Ph::MenuItem_ShowCheckOnItemsWithIcons,
-                               menuItem->tabWidth);
+                               tabWidth
+          );
       int t = s.indexOf(QLatin1Char('\t'));
       int text_flags = Qt::AlignLeft | Qt::AlignTop | Qt::TextShowMnemonic |
                        Qt::TextDontClip | Qt::TextSingleLine;
@@ -3010,7 +3017,7 @@ void PhantomStyle::drawControl(ControlElement element,
       if (t >= 0) {
         QRect mnemonicR =
             Ph::menuItemMnemonicRect(metrics, option->direction, itemRect,
-                                     hasSubMenu, menuItem->tabWidth);
+                                     hasSubMenu, tabWidth);
         const QStringView textToDrawRef = s.mid(t + 1);
         const QString unsafeTextToDraw = QString::fromRawData(
             textToDrawRef.data(), textToDrawRef.size());
@@ -4367,7 +4374,9 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_MessageBoxIconSize:
     val = 48;
     break;
+#if QT_DEPRECATED_SINCE(6, 8)
   case PM_DialogButtonsSeparator:
+#endif
   case PM_ScrollBarSliderMin:
     val = 26;
     break;
@@ -5259,7 +5268,7 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
   case SH_PrintDialog_RightAlignButtons:
   case SH_FontDialog_SelectAssociatedText:
   case SH_ComboBox_ListMouseTracking:
-  case SH_ScrollBar_StopMouseOverSlider:
+  case SH_Slider_StopMouseOverSlider:
   case SH_ScrollBar_MiddleClickAbsolutePosition:
   case SH_TitleBar_AutoRaise:
   case SH_TitleBar_NoBorder:
