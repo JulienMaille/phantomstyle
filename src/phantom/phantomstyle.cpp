@@ -183,12 +183,10 @@ static const bool ScrollAreaModern = true;
 // per-widget style hint associated with it.
 static const bool TabBar_InactiveTabsHaveSpecular = false;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static double dpr(const QWidget* widget) {
   auto window = widget ? widget->windowHandle() : nullptr;
   return window ? window->devicePixelRatio() : 1.;
 }
-#endif
 
 struct Grad {
   Grad(const QColor& from, const QColor& to) {
@@ -2583,6 +2581,7 @@ void PhantomStyle::drawControl(ControlElement element,
       int iconExtent =
           qMin(qMin(rect.height(), rect.width()), option->fontMetrics.height());
 
+      auto window = widget ? widget->windowHandle() : nullptr;
       QPixmap pixmap = header->icon.pixmap(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           window, QSize(iconExtent, iconExtent),
@@ -3122,9 +3121,14 @@ void PhantomStyle::drawControl(ControlElement element,
       QIcon::Mode mode =
           button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
       QIcon::State state = button->state & State_On ? QIcon::On : QIcon::Off;
-
-      QPixmap pixmap = button->icon.pixmap(button->iconSize,
-                                           Phantom::dpr(widget), mode, state);
+      auto window = widget ? widget->windowHandle() : nullptr;
+      QPixmap pixmap = button->icon.pixmap(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          window, button->iconSize,
+#else
+          button->iconSize, Phantom::dpr(widget),
+#endif
+          mode, state);
       int pixmapWidth =
           (int)((qreal)pixmap.width() / pixmap.devicePixelRatio());
       int pixmapHeight =
