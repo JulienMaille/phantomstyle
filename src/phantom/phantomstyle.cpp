@@ -183,10 +183,12 @@ static const bool ScrollAreaModern = true;
 // per-widget style hint associated with it.
 static const bool TabBar_InactiveTabsHaveSpecular = false;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static double dpr(const QWidget* widget) {
   auto window = widget ? widget->windowHandle() : nullptr;
   return window ? window->devicePixelRatio() : 1.;
 }
+#endif
 
 struct Grad {
   Grad(const QColor& from, const QColor& to) {
@@ -508,7 +510,7 @@ Q_ALWAYS_INLINE quint64 fastfragile_hash_qpalette(const QPalette& p) {
   // guard for it, so that it will default to a more safe definition on the
   // next guaranteed big breaking change for Qt. A warning will hopefully get
   // someone to double-check it at some point in the future.
-//#warning "Verify contents and layout of QPalette::cacheKey() have not changed"
+#pragma message("Verify contents and layout of QPalette::cacheKey() have not changed")
   QtPrivate::QHashCombine c;
   uint h = qHash(p.currentColorGroup());
   h = c(h, (uint)(x.u & 0xFFFFFFFFu));
@@ -581,7 +583,11 @@ Q_NEVER_INLINE PhSwatchPtr deep_getCachedSwatchOfQPalette(
       ptr.detach();
     }
     ptr->loadFromQPalette(qpalette);
-    cache->insert(cache->begin(), PhCacheEntry(key, ptr));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    cache->prepend(PhCacheEntry(key, ptr));
+#else
+    cache->insert(cache->cbegin(), PhCacheEntry(key, ptr));
+#endif
     return ptr;
   } else {
     if (idx == 0) {
@@ -592,7 +598,11 @@ Q_NEVER_INLINE PhSwatchPtr deep_getCachedSwatchOfQPalette(
     // want to depend on algorithm or write this myself. Small N with a movable
     // type means it doesn't really matter in this case.
     cache->remove(idx);
-    cache->insert(cache->begin(), e);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    cache->prepend(e);
+#else
+    cache->insert(cache->cbegin(), e);
+#endif
     return e.second;
   }
 }
@@ -2574,7 +2584,11 @@ void PhantomStyle::drawControl(ControlElement element,
           qMin(qMin(rect.height(), rect.width()), option->fontMetrics.height());
 
       QPixmap pixmap = header->icon.pixmap(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          window, QSize(iconExtent, iconExtent),
+#else
           QSize(iconExtent, iconExtent), Phantom::dpr(widget),
+#endif
           (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
       int pixw = (int)((qreal)pixmap.width() / pixmap.devicePixelRatio());
       QRect aligned =
@@ -2780,7 +2794,13 @@ void PhantomStyle::drawControl(ControlElement element,
       int iconExtent = qMin(r.width() - margin, r.height() - margin);
       QSize iconSize(iconExtent, iconExtent);
 
-      QPixmap pixmap = mbi->icon.pixmap(window, iconSize, mode, state);
+      QPixmap pixmap = mbi->icon.pixmap(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          window, iconSize,
+#else
+          iconSize, Phantom::dpr(widget),
+#endif
+          mode, state);
       const int pixw = (int)(pixmap.width() / pixmap.devicePixelRatio());
       const int pixh = (int)(pixmap.height() / pixmap.devicePixelRatio());
       QRect pixmapRect = QStyle::alignedRect(option->direction, Qt::AlignCenter,
@@ -2928,8 +2948,14 @@ void PhantomStyle::drawControl(ControlElement element,
         iconSize = combo->iconSize();
       }
 #endif
-      QPixmap pixmap =
-          menuItem->icon.pixmap(iconSize, Phantom::dpr(widget), mode, state);
+      QWindow* window = widget ? widget->windowHandle() : nullptr;
+      QPixmap pixmap = menuItem->icon.pixmap(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          window, iconSize,
+#else
+          iconSize, Phantom::dpr(widget),
+#endif
+          mode, state);
       const int pixw = (int)(pixmap.width() / pixmap.devicePixelRatio());
       const int pixh = (int)(pixmap.height() / pixmap.devicePixelRatio());
       QRect pixmapRect = QStyle::alignedRect(option->direction, Qt::AlignCenter,
@@ -2949,7 +2975,11 @@ void PhantomStyle::drawControl(ControlElement element,
       QRect textRect =
           Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu,
                                hasIcon, Ph::MenuItem_ShowCheckOnItemsWithIcons,
-                               tabWidth
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                               menuItem->tabWidth
+#else
+                               menuItem->reservedShortcutWidth
+#endif
           );
       int t = s.indexOf(QLatin1Char('\t'));
       int text_flags = Qt::AlignLeft | Qt::AlignTop | Qt::TextShowMnemonic |
@@ -3024,9 +3054,14 @@ void PhantomStyle::drawControl(ControlElement element,
 
       // Draw mnemonic text
       if (t >= 0) {
-        QRect mnemonicR =
-            Ph::menuItemMnemonicRect(metrics, option->direction, itemRect,
-                                     hasSubMenu, tabWidth);
+        QRect mnemonicR = Ph::menuItemMnemonicRect(metrics, option->direction,
+                                                   itemRect, hasSubMenu,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                                   menuItem->tabWidth
+#else
+                                                   menuItem->reservedShortcutWidth
+#endif
+        );
         const QStringView textToDrawRef = s.mid(t + 1);
         const QString unsafeTextToDraw = QString::fromRawData(
             textToDrawRef.data(), textToDrawRef.size());
@@ -4743,11 +4778,20 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
     bool nullIcon = hdr->icon.isNull();
     int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
     int iconSize = nullIcon ? 0 : option->fontMetrics.height();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine, hdr->text);
     QSize sz;
     sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
     sz.setWidth((nullIcon ? 0 : margin) + iconSize +
                 (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
+#else
+    int txtSize =
+        hdr->fontMetrics.horizontalAdvance(hdr->text, Qt::TextSingleLine);
+    QSize sz;
+    sz.setHeight(margin + qMax(iconSize, hdr->fontMetrics.height()) + margin);
+    sz.setWidth((nullIcon ? 0 : margin) + iconSize +
+                (hdr->text.isNull() ? 0 : margin) + txtSize + margin);
+#endif
     if (hdr->sortIndicator != QStyleOptionHeader::None) {
       if (hdr->orientation == Qt::Horizontal)
         sz.rwidth() += sz.height() + margin;
@@ -5277,7 +5321,11 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
   case SH_PrintDialog_RightAlignButtons:
   case SH_FontDialog_SelectAssociatedText:
   case SH_ComboBox_ListMouseTracking:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  case SH_ScrollBar_StopMouseOverSlider:
+#else
   case SH_Slider_StopMouseOverSlider:
+#endif
   case SH_ScrollBar_MiddleClickAbsolutePosition:
   case SH_TitleBar_AutoRaise:
   case SH_TitleBar_NoBorder:
@@ -5412,6 +5460,10 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
   }
   case SH_Widget_Animate:
     return 0;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  case SH_Slider_AbsoluteSetButtons:
+    return Qt::AllButtons;
+#endif
   default:
     break;
   }
