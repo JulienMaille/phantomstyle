@@ -4395,6 +4395,9 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_ToolTipLabelFrameWidth:
     val = 2;
     break;
+  case PM_HeaderMarkSize:
+    val = 6;
+    break;
   case PM_ButtonMargin:
     val = 6;
     break;
@@ -4782,26 +4785,24 @@ QSize PhantomStyle::sizeFromContents(ContentsType type,
     bool nullIcon = hdr->icon.isNull();
     int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
     int iconSize = nullIcon ? 0 : option->fontMetrics.height();
+
+    int headerFlags = Qt::TextSingleLine;
+    auto headerView = qobject_cast<const QHeaderView*>(widget);
+    if (headerView && headerView->defaultAlignment() & Qt::TextWordWrap)
+      headerFlags = Qt::TextWordWrap;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine, hdr->text);
+    QSize txt = hdr->fontMetrics.size(headerFlags, hdr->text);
     QSize sz;
     sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
     sz.setWidth((nullIcon ? 0 : margin) + iconSize +
                 (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
 #else
-    int txtSize =
-        hdr->fontMetrics.horizontalAdvance(hdr->text, Qt::TextSingleLine);
+    int txtSize = hdr->fontMetrics.horizontalAdvance(hdr->text, headerFlags);
     QSize sz;
     sz.setHeight(margin + qMax(iconSize, hdr->fontMetrics.height()) + margin);
     sz.setWidth((nullIcon ? 0 : margin) + iconSize +
                 (hdr->text.isNull() ? 0 : margin) + txtSize + margin);
 #endif
-    if (hdr->sortIndicator != QStyleOptionHeader::None) {
-      if (hdr->orientation == Qt::Horizontal)
-        sz.rwidth() += sz.height() + margin;
-      else
-        sz.rheight() += sz.width() + margin;
-    }
     return sz;
   }
 #endif
@@ -5527,6 +5528,27 @@ QRect PhantomStyle::subElementRect(SubElement sr, const QStyleOption* opt,
     return r.adjusted(pad, 0, -pad, 0);
   }
 #endif
+    case SE_HeaderArrow: {
+      if (auto header = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
+        QRect r = header->rect;
+
+        const int markSize = pixelMetric(PM_HeaderMarkSize, opt, w);
+        const int topMargin = 1; // how many px from top
+        const int cx = r.center().x();
+        QRect mr(cx - markSize / 2, r.top() + topMargin, markSize, markSize);
+        return mr;
+      }
+      break;
+    }
+    case SE_HeaderLabel: {
+      if (auto header = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
+        // Make a local copy and clear sort indicator so Qt won't reserve mark space
+        QStyleOptionHeader noSortOpt(*header);
+        noSortOpt.sortIndicator = QStyleOptionHeader::None;
+        return QCommonStyle::subElementRect(sr, &noSortOpt, w);
+      }
+      break;
+      }
   default:
     break;
   }
