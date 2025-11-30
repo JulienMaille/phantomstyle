@@ -110,17 +110,17 @@ enum {
   ComboBox_NonEditable_ContentsHPad = 4,
 };
 
-static const qreal TabBarTab_Rounding = 0.0;
-static const qreal SpinBox_Rounding = 0.0;
-static const qreal LineEdit_Rounding = 0.0;
-static const qreal FrameFocusRect_Rounding = 1.0;
-static const qreal PushButton_Rounding = 0.0;
-static const qreal ToolButton_Rounding = 0.0;
-static const qreal ToolBarButton_Rounding = 1.0;
-static const qreal ProgressBar_Rounding = 0.0;
-static const qreal GroupBox_Rounding = 0.0;
-static const qreal SliderHandle_Rounding = 0.0;
-static const qreal SliderGroove_Rounding = 0.0;
+static const qreal TabBarTab_Rounding = 4.0;
+static const qreal SpinBox_Rounding = 4.0;
+static const qreal LineEdit_Rounding = 4.0;
+static const qreal FrameFocusRect_Rounding = 4.0;
+static const qreal PushButton_Rounding = 4.0;
+static const qreal ToolButton_Rounding = 4.0;
+static const qreal ToolBarButton_Rounding = 4.0;
+static const qreal ProgressBar_Rounding = 4.0;
+static const qreal GroupBox_Rounding = 4.0;
+static const qreal SliderHandle_Rounding = 4.0;
+static const qreal SliderGroove_Rounding = 2.0;
 
 static const qreal CheckMark_WidthOfHeightScale = 1.0;
 static const qreal VLine_WidthOfCheckMarkScale = 0.2;
@@ -1489,8 +1489,9 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
       proxy()->drawPrimitive(PE_PanelMenu, &copy, painter, widget);
       break;
     }
-    Ph::fillRectOutline(painter, option->rect, 1,
-                        swatch.color(S_window_outline));
+    Ph::PSave save(painter);
+    Ph::paintBorderedRoundRect(painter, option->rect, Ph::LineEdit_Rounding, swatch,
+                               S_window_outline, S_none);
     break;
   }
   case PE_FrameMenu: {
@@ -4401,7 +4402,7 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_ButtonMargin:
     val = 6;
     break;
-  case PM_ButtonIconLabelMargin:  // this PixelMetric enum comes from our own Qt5 patch
+  case Phantom_PM_ButtonIconLabelMargin:  // this PixelMetric enum comes from our own Qt5 patch
     val = -15;
     break;
   case PM_ComboBoxFrameWidth:
@@ -4897,7 +4898,7 @@ void PhantomStyle::polish(QWidget* widget) {
   QCommonStyle::polish(widget);
   // Leaving this code here to debug/remove hover stuff if necessary
 #if 1
-  if (false
+  if (true
 #if QT_CONFIG(abstractbutton)
       || qobject_cast<QAbstractButton*>(widget)
 #endif

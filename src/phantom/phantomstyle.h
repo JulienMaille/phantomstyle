@@ -15,6 +15,10 @@ public:
     Phantom_PE_WindowFrameColor,
   };
 
+  enum PhantomPixelMetric {
+    Phantom_PM_ButtonIconLabelMargin = PM_CustomBase + 1,
+  };
+
   QPalette standardPalette() const override;
   void drawPrimitive(PrimitiveElement elem, const QStyleOption* option,
                      QPainter* painter,

@@ -1,6 +1,7 @@
 #include "PhTestApp.h"
 #include "phantomstyle.h"
 #include <QMainWindow>
+#include <QTimer>
 #ifdef BUILD_WITH_EASY_PROFILER
 #include <easy/profiler.h>
 #endif
@@ -63,6 +64,28 @@ int main(int argc, char* argv[]) {
   ct->setWindowFlags(ct->windowFlags() | Qt::Window);
   ct->show();
 #endif
+
+  // Check for screenshot argument
+  bool screenshot = false;
+  QString screenshotFilename;
+  for (int i = 1; i < argc; ++i) {
+      if (QString(argv[i]) == "-grab" && i + 1 < argc) {
+          screenshot = true;
+          screenshotFilename = QString(argv[i+1]);
+      }
+  }
+
+  if (screenshot) {
+      QTimer::singleShot(1000, [=]() {
+          if (gallery) {
+              QPixmap pixmap(gallery->size());
+              gallery->render(&pixmap);
+              pixmap.save(screenshotFilename);
+          }
+          QCoreApplication::quit();
+      });
+  }
+
   return a.exec();
 }
 
