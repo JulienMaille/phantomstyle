@@ -321,6 +321,7 @@ enum SwatchColor {
   S_itemView_multiSelection_currentBorder,
   S_itemView_headerOnLine,
   S_scrollbarGutter_disabled,
+  S_control_border_focus,
 
   // Aliases
   S_progressBar = S_highlight,
@@ -333,7 +334,7 @@ enum SwatchColor {
 using Swatchy = SwatchColors::SwatchColor;
 
 enum {
-  Num_SwatchColors = SwatchColors::S_scrollbarGutter_disabled + 1,
+  Num_SwatchColors = SwatchColors::S_control_border_focus + 1 + 20, // Pad for safety
   Num_ShadowSteps = 3,
 };
 
@@ -446,6 +447,8 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
       Dc::itemViewMultiSelectionCurrentBorderOf(pal);
   colors[S_itemView_headerOnLine] = Dc::itemViewHeaderOnLineColorOf(pal);
   colors[S_scrollbarGutter_disabled] = colors[S_window];
+  // Windows 11 style focus border
+  colors[S_control_border_focus] = colors[S_highlight];
 
   brushes[S_none] = Qt::NoBrush;
   for (int i = S_none + 1; i < Num_SwatchColors; ++i) {
@@ -1819,31 +1822,29 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     if (widget && widget->parent() && widget->parent()->inherits("QToolBar"))
       rounding = Ph::ToolBarButton_Rounding;
 
-    Swatchy outline = S_window_outline;
-    Swatchy fill = S_button;
-    Swatchy specular = S_button_specular;
+    Swatchy outline = S_none; // Win11 tool buttons usually flat until hovered
+    Swatchy fill = S_none;
+    Swatchy specular = S_none;
+
     if (isDown) {
       fill = S_button_pressed;
-      specular = S_button_pressed_specular;
+      outline = S_none;
     } else if (isOn) {
       fill = S_highlight_on;
-      specular = S_none;
-      outline = S_highlight;
+      outline = S_none;
     } else if (hasFocus) {
       fill = S_highlight_hover;
-      if (widget && widget->autoFillBackground()) {
-        fill = S_button_specular;
-      }
+      outline = S_none;
     }
-    if (hasFocus) {
-      outline = S_frame_outline;
+
+    // Always provide background if autoFillBackground is on
+    if (widget && widget->autoFillBackground() && fill == S_none) {
+        fill = S_button;
     }
+
     QRect r = option->rect;
     Ph::PSave save(painter);
     Ph::paintBorderedRoundRect(painter, r, rounding, swatch, outline, fill);
-    if (Ph::BorderSpecularOnPanelButton)
-      Ph::paintBorderedRoundRect(painter, r.adjusted(1, 1, -1, -1), rounding,
-                                 swatch, specular, S_none);
     break;
   }
   case PE_IndicatorDockWidgetResizeHandle: {
@@ -1861,18 +1862,17 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool hasFocus = option->state & State_HasFocus;
     bool isEnabled = option->state & State_Enabled;
     const qreal rounding = Ph::LineEdit_Rounding;
-    auto pen = hasFocus ? S_highlight_outline : S_frame_outline;
+    auto pen = S_frame_outline;
     Ph::PSave save(painter);
     Ph::paintBorderedRoundRect(painter, r, rounding, swatch, pen, S_none);
-    save.restore();
-    if (Ph::OverhangShadows && !hasFocus && isEnabled) {
-      // Imperfect when rounded, may leave a gap on left and right. Going
-      // closer would eat into the outline, though.
-      Ph::fillRectEdges(painter,
-                        r.adjusted(qRound(rounding / 2) + 1, 1,
-                                   -(qRound(rounding / 2) + 1), -1),
-                        Qt::TopEdge, 1, swatch.color(S_base_shadow));
+
+    if (hasFocus && isEnabled) {
+        // Win11-style bottom accent line on focus
+        r.setHeight(r.height() + 1); // Extend slightly for the bottom border
+        Ph::fillRectEdges(painter, r.adjusted(0, 0, 0, -1), Qt::BottomEdge, 2, swatch.color(S_control_border_focus));
     }
+
+    save.restore();
     break;
   }
   case PE_PanelLineEdit: {
@@ -1952,31 +1952,33 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
                          option->state & State_KeyboardFocusChange;
     bool isSunken = state & State_Sunken;
     bool isEnabled = state & State_Enabled;
-    Swatchy outlineColor =
-        isHighlighted ? S_highlight_outline : S_frame_outline;
-    Swatchy bgFillColor = isSunken ? S_highlight : S_base;
+    bool isChecked = state & State_On;
+
+    Swatchy outlineColor = isChecked ? S_highlight : S_frame_outline;
+    if (isHighlighted) outlineColor = S_highlight_outline;
+
+    Swatchy bgFillColor = isChecked ? S_highlight : S_base;
+    if (!isEnabled) bgFillColor = S_window; // Disabled bg
+
     QPointF circleCenter(rx + rw / 2.0, ry + rh / 2.0);
-    const qreal lineThickness = 1.0;
-    qreal outlineRadius = (qMin(rw, rh) - lineThickness) / 2.0;
-    qreal fillRadius = outlineRadius - lineThickness / 2.0;
+    const qreal lineThickness = isChecked ? 0.0 : 1.0;
+    qreal outlineRadius = (qMin(rw, rh) - 1.0) / 2.0;
+
     Ph::PSave save(painter);
     painter->setRenderHint(QPainter::Antialiasing);
+
+    // Draw outer circle
     painter->setBrush(swatch.brush(bgFillColor));
-    painter->setPen(swatch.pen(outlineColor));
-    painter->drawEllipse(circleCenter, outlineRadius, outlineRadius);
-    if (Ph::IndicatorShadows && !isSunken && isEnabled) {
-      // Really slow, just a temp demo test
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(swatch.brush(S_base_shadow));
-      QPainterPath path0, path1;
-      path0.addEllipse(circleCenter, fillRadius, fillRadius);
-      path1.addEllipse(circleCenter + QPointF(0, 1.25), fillRadius, fillRadius);
-      QPainterPath path2 = path0 - path1;
-      painter->drawPath(path2);
+    if (isChecked) {
+        painter->setPen(Qt::NoPen);
+    } else {
+        painter->setPen(swatch.pen(outlineColor));
     }
-    if (state & State_On) {
-      Swatchy fgColor = isSunken ? S_highlightedText : S_windowText;
-      qreal checkmarkRadius = outlineRadius / 2.32;
+    painter->drawEllipse(circleCenter, outlineRadius, outlineRadius);
+
+    if (isChecked) {
+      Swatchy fgColor = S_highlightedText;
+      qreal checkmarkRadius = outlineRadius * 0.45;
       painter->setPen(Qt::NoPen);
       painter->setBrush(swatch.brush(fgColor));
       painter->drawEllipse(circleCenter, checkmarkRadius, checkmarkRadius);
@@ -2132,28 +2134,42 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     bool hasFocus = (option->state & State_HasFocus &&
                      option->state & State_KeyboardFocusChange) || option->state & State_MouseOver;
     const qreal rounding = Ph::PushButton_Rounding;
-    Swatchy outline = S_frame_outline;
+
+    // Windows 11 style:
+    // Normal: Light gray bg, thin darker border
+    // Hover: Slightly lighter bg
+    // Pressed: Darker bg, smaller content (simulated via color here)
+
+    Swatchy outline = S_frame_outline; // Default subtle border
     Swatchy fill = S_button;
-    Swatchy specular = S_button_specular;
-    if (isDown) {
-      fill = S_button_pressed;
-      specular = S_button_pressed_specular;
+
+    if (!isEnabled) {
+        // Disabled state logic (simplified)
+        fill = S_window;
+        outline = S_window_outline;
+    } else if (isDown) {
+        fill = S_button_pressed;
+        outline = S_frame_outline; // Keep border
     } else if (isOn) {
-      fill = S_highlight_on;
-      specular = S_none;
-      outline = S_highlight;
+        fill = S_highlight;
+        outline = S_highlight_outline;
     } else if (hasFocus) {
-      fill = S_highlight_hover;
+        fill = S_highlight_hover; // Hover effect
+        // Windows 11 doesn't usually highlight the border on hover for standard buttons
+        // unless it's the default/accent button.
     }
-    if (hasFocus || isDefault) {
-      outline = S_highlight_outline;
+
+    if (isDefault && isEnabled && !isDown && !isOn) {
+        // Accent button style
+        fill = S_highlight;
+        outline = S_highlight_outline;
+        // If hovered, we might want a lighter accent, but we don't have that swatch yet.
+        // S_highlight_hover is a transparent overlay usually.
     }
+
     QRect r = option->rect;
     Ph::PSave save(painter);
     Ph::paintBorderedRoundRect(painter, r, rounding, swatch, outline, fill);
-    if (Ph::BorderSpecularOnPanelButton)
-      Ph::paintBorderedRoundRect(painter, r.adjusted(1, 1, -1, -1), rounding,
-                                 swatch, specular, S_none);
     break;
   }
   case PE_FrameTabWidget: {
