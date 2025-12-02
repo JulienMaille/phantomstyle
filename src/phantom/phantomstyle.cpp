@@ -3,6 +3,7 @@
 #include "phantomtweak.h"
 #include <QtCore/qmath.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
@@ -322,6 +323,11 @@ enum SwatchColor {
   S_itemView_headerOnLine,
   S_scrollbarGutter_disabled,
   S_control_border_focus,
+  S_toggle_off_bg,
+  S_toggle_off_border,
+  S_toggle_on_bg,
+  S_toggle_on_indicator,
+  S_toggle_off_indicator,
 
   // Aliases
   S_progressBar = S_highlight,
@@ -449,6 +455,13 @@ Q_NEVER_INLINE void PhSwatch::loadFromQPalette(const QPalette& pal) {
   colors[S_scrollbarGutter_disabled] = colors[S_window];
   // Windows 11 style focus border
   colors[S_control_border_focus] = colors[S_highlight];
+
+  // Toggle Switch Colors
+  colors[S_toggle_off_bg] = Dc::adjustLightness(colors[S_button], isDark ? 0.1 : -0.05); // Darker than button bg
+  colors[S_toggle_off_border] = colors[S_frame_outline];
+  colors[S_toggle_on_bg] = colors[S_highlight];
+  colors[S_toggle_on_indicator] = colors[S_highlightedText]; // Usually white
+  colors[S_toggle_off_indicator] = colors[S_text]; // Knob color when off
 
   brushes[S_none] = Qt::NoBrush;
   for (int i = S_none + 1; i < Num_SwatchColors; ++i) {
@@ -1895,49 +1908,56 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
     auto checkbox = qstyleoption_cast<const QStyleOptionButton*>(option);
     if (!checkbox)
       break;
+
+    // Win11 style toggle switch check?
+    // Let's keep checkbox square but rounded for now, based on image checkmarks seem blue with white check.
+
     QRect r = option->rect;
     bool isHighlighted = option->state & State_HasFocus &&
                          option->state & State_KeyboardFocusChange;
-    bool isSelected = option->state & State_Selected;
-    bool isFlat = checkbox->features & QStyleOptionButton::Flat;
+    // bool isSelected = option->state & State_Selected; // unused
+    // bool isFlat = checkbox->features & QStyleOptionButton::Flat; // unused
     bool isEnabled = option->state & State_Enabled;
+    bool isChecked = option->state & State_On;
     bool isPressed = state & State_Sunken;
-    Swatchy outlineColor =
-        isHighlighted ? S_highlight_outline : S_frame_outline;
-    Swatchy bgFillColor = isPressed ? S_highlight : S_base;
-    Swatchy fgColor = isFlat ? S_windowText : S_text;
-    if (isPressed && !isFlat) {
-      fgColor = S_highlightedText;
+
+    Swatchy outlineColor = isHighlighted ? S_highlight_outline : S_frame_outline;
+    Swatchy bgFillColor = S_base;
+    Swatchy fgColor = S_text;
+
+    if (isChecked) {
+        bgFillColor = S_highlight;
+        outlineColor = S_highlight; // Border matches fill when checked
+        fgColor = S_highlightedText;
     }
-    // Bare checkmarks that are selected should draw with the highlighted text
-    // color.
-    if (isSelected && isFlat) {
-      fgColor = S_highlightedText;
+
+    if (!isEnabled) {
+        bgFillColor = S_window; // Disabled
+        outlineColor = S_window_outline;
+        fgColor = S_windowText_disabled;
     }
-    if (!isFlat) {
-      QRect fillR = r;
-      Ph::fillRectOutline(painter, fillR, 1, swatch.color(outlineColor));
-      fillR.adjust(1, 1, -1, -1);
-      if (Ph::IndicatorShadows && !isPressed && isEnabled) {
-        Ph::fillRectEdges(painter, fillR, Qt::TopEdge, 1,
-                          swatch.color(S_base_shadow));
-        fillR.adjust(0, 1, 0, 0);
-      }
-      painter->fillRect(fillR, swatch.color(bgFillColor));
-    }
+
+    Ph::PSave save(painter);
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    // Draw rounded box
+    const qreal rounding = 4.0;
+    Ph::paintBorderedRoundRect(painter, r, rounding, swatch, outlineColor, bgFillColor);
+
     if (checkbox->state & State_NoChange) {
-      const qreal insetScale = 0.7;
+      // Tri-state hyphen
+      const qreal insetScale = 0.6;
       qreal rx, ry, rw, rh;
-      QRectF(r.adjusted(1, 1, -1, -1)).getRect(&rx, &ry, &rw, &rh);
+      QRectF(r).getRect(&rx, &ry, &rw, &rh);
       qreal dimx = rw * insetScale;
       qreal dimy = rh * insetScale;
       QRectF r_(rx + (rw - dimx) / 2, ry + (rh - dimy) / 2, dimx, dimy);
       Ph::drawHyphen(painter, d->checkBox_pen_scratch, r_, swatch, fgColor);
-    } else if (checkbox->state & State_On) {
-      const qreal insetScale = 0.8;
+    } else if (isChecked) {
+      // Checkmark
+      const qreal insetScale = 0.7; // Slightly larger for better visibility
       qreal rx, ry, rw, rh;
-      QRectF(r.adjusted(1, 1, -1, -1)).getRect(&rx, &ry, &rw, &rh);
-      // kinda wrong, assumes we're already square, but we probably are
+      QRectF(r).getRect(&rx, &ry, &rw, &rh);
       qreal dimx = rw * insetScale * Ph::CheckMark_WidthOfHeightScale;
       qreal dimy = rh * insetScale;
       QRectF r_(rx + (rw - dimx) / 2, ry + (rh - dimy) / 2, dimx, dimy);
