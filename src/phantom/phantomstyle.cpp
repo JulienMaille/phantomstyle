@@ -6,6 +6,8 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qtimer.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
@@ -867,6 +869,32 @@ QRect menuItemArrowRect(const MenuItemMetrics& metrics,
 #endif
 
 Q_NEVER_INLINE
+QRect progressBarIndeterminateRect(const QStyleOptionProgressBar* bar) {
+  QRect r = bar->rect;
+  bool isHorizontal = bar->state & QStyle::State_Horizontal;
+  bool isForward = !isHorizontal || bar->direction != Qt::RightToLeft;
+  if (bar->invertedAppearance)
+    isForward = !isForward;
+
+  int maxLen = isHorizontal ? r.width() : r.height();
+  if (maxLen <= 0)
+    return QRect();
+
+  int chunkLen = qBound(1, maxLen / 3, maxLen);
+  int span = maxLen + chunkLen;
+  int pos = int(QDateTime::currentMSecsSinceEpoch() % span) - chunkLen;
+  QRect chunk = r;
+  if (isHorizontal) {
+    chunk.setWidth(chunkLen);
+    chunk.moveLeft(isForward ? r.left() + pos : r.right() - pos - chunkLen + 1);
+  } else {
+    chunk.setHeight(chunkLen);
+    chunk.moveTop(isForward ? r.bottom() - pos - chunkLen + 1 : r.top() + pos);
+  }
+  return chunk & r;
+}
+
+Q_NEVER_INLINE
 void progressBarFillRects(
     const QStyleOptionProgressBar* bar,
     // The rect that represents the filled/completed region
@@ -880,6 +908,13 @@ void progressBarFillRects(
   bool isHorizontal = bar->state & QStyle::State_Horizontal;
   bool isInverted = bar->invertedAppearance;
   bool isIndeterminate = bar->minimum == 0 && bar->maximum == 0;
+  if (isIndeterminate) {
+    outFilled = progressBarIndeterminateRect(bar);
+    outNonFilled = bar->rect;
+    outIsIndeterminate = true;
+    return;
+  }
+
   bool isForward = !isHorizontal || bar->direction != Qt::RightToLeft;
   if (isInverted)
     isForward = !isForward;
@@ -2689,7 +2724,10 @@ void PhantomStyle::drawControl(ControlElement element,
     QRect filled, nonFilled;
     bool isIndeterminate = false;
     Ph::progressBarFillRects(bar, filled, nonFilled, isIndeterminate);
-    if (isIndeterminate || bar->progress > bar->minimum) {
+    if (isIndeterminate && widget && widget->isVisible())
+      QTimer::singleShot(10, const_cast<QWidget*>(widget), SLOT(update()));
+    if ((isIndeterminate && !filled.isEmpty()) ||
+        (!isIndeterminate && bar->progress > bar->minimum)) {
       Ph::PSave save(painter);
       Ph::paintBorderedRoundRect(painter, filled, rounding, swatch,
                                  S_progressBar_outline, S_progressBar);
@@ -2697,16 +2735,6 @@ void PhantomStyle::drawControl(ControlElement element,
         Ph::paintBorderedRoundRect(painter, filled.adjusted(1, 1, -1, -1),
                                    rounding, swatch, S_progressBar_specular,
                                    S_none);
-      if (isIndeterminate) {
-        // TODO paint indeterminate indicator
-#if QT_CONFIG(animation)
-        // old code started or stepped animation here
-#endif
-      } else {
-#if QT_CONFIG(animation)
-        // old code stopped animation here
-#endif
-      }
     }
     break;
   }
@@ -5464,7 +5492,11 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
 #endif
   }
   case SH_Widget_Animate:
+#if QT_CONFIG(progressbar)
+    return qobject_cast<const QProgressBar*>(widget) ? 1 : 0;
+#else
     return 0;
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   case SH_Slider_AbsoluteSetButtons:
     return Qt::AllButtons;
