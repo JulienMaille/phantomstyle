@@ -115,7 +115,6 @@ enum {
 static const qreal TabBarTab_Rounding = 0.0;
 static const qreal SpinBox_Rounding = 0.0;
 static const qreal LineEdit_Rounding = 0.0;
-static const qreal FrameFocusRect_Rounding = 1.0;
 static const qreal PushButton_Rounding = 0.0;
 static const qreal ToolButton_Rounding = 0.0;
 static const qreal ToolBarButton_Rounding = 1.0;
@@ -125,7 +124,6 @@ static const qreal SliderHandle_Rounding = 0.0;
 static const qreal SliderGroove_Rounding = 0.0;
 
 static const qreal CheckMark_WidthOfHeightScale = 1.0;
-static const qreal VLine_WidthOfCheckMarkScale = 0.2;
 static const qreal PushButton_HorizontalPaddingFontHeightRatio = 1.0 / 2.0;
 static const qreal TabBar_HPaddingFontRatio = 1.25;
 static const qreal TabBar_VPaddingFontRatio = 1.0 / 1.25;
