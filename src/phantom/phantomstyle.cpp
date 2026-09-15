@@ -528,7 +528,11 @@ Q_ALWAYS_INLINE quint64 fastfragile_hash_qpalette(const QPalette& p) {
 uint accurate_hash_qpalette(const QPalette& p) {
   // Probably shouldn't use this, could replace with our own guy. It's not a
   // great hasher anyway.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+  QtPrivate::QHashCombine c(0);
+#else
   QtPrivate::QHashCombine c;
+#endif
   uint h = qHash(p.currentColorGroup());
   constexpr QPalette::ColorRole const roles[] = {
       QPalette::Window,         QPalette::Button,     QPalette::Base,
@@ -4426,8 +4430,8 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_MessageBoxIconSize:
     val = 48;
     break;
-#if QT_DEPRECATED_SINCE(6, 8)
-  case PM_DialogButtonsSeparator:
+#if !QT_DEPRECATED_SINCE(6, 8)
+  case PM_DialogButtonsSeparator: // "Not used and no effect since Qt 4"
 #endif
   case PM_ScrollBarSliderMin:
     val = 26;
