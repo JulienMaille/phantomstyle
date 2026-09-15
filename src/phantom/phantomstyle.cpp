@@ -1660,8 +1660,6 @@ void PhantomStyle::drawPrimitive(PrimitiveElement elem,
         }
 
         if (vopt->state & QStyle::State_Selected || mouseOver) {
-          QRect textRect =
-              subElementRect(QStyle::SE_ItemViewItemText, option, widget);
           painter->fillRect(vopt->rect, QBrush(highlight));
         }
       }
@@ -2616,7 +2614,9 @@ void PhantomStyle::drawControl(ControlElement element,
       int iconExtent =
           qMin(qMin(rect.height(), rect.width()), option->fontMetrics.height());
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       auto window = widget ? widget->windowHandle() : nullptr;
+#endif
       QPixmap pixmap = header->icon.pixmap(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           window, QSize(iconExtent, iconExtent),
@@ -2809,13 +2809,12 @@ void PhantomStyle::drawControl(ControlElement element,
     painter->fillRect(r, swatch.color(fill));
 
     if (!mbi->icon.isNull()) {
-      const auto metrics =
-          Ph::MenuItemMetrics::ofFontHeight(option->fontMetrics.height());
-
       QIcon::Mode mode =
           mbi->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
       QIcon::State state = mbi->state & State_On ? QIcon::On : QIcon::Off;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       auto window = widget ? widget->window()->windowHandle() : nullptr;
+#endif
 
       int margin = Ph::dpiScaled(2);
       int iconExtent = qMin(r.width() - margin, r.height() - margin);
@@ -2975,7 +2974,9 @@ void PhantomStyle::drawControl(ControlElement element,
         iconSize = combo->iconSize();
       }
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       QWindow* window = widget ? widget->windowHandle() : nullptr;
+#endif
       QPixmap pixmap = menuItem->icon.pixmap(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           window, iconSize,
@@ -2989,12 +2990,6 @@ void PhantomStyle::drawControl(ControlElement element,
                                              QSize(pixw, pixh), iconRect);
       painter->drawPixmap(pixmapRect.topLeft(), pixmap);
     }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int tabWidth = menuItem->tabWidth;
-#else
-    int tabWidth = menuItem->reservedShortcutWidth;
-#endif
 
     // Draw main text and mnemonic text
     QStringView s(menuItem->text);
@@ -3149,7 +3144,9 @@ void PhantomStyle::drawControl(ControlElement element,
       QIcon::Mode mode =
           button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
       QIcon::State state = button->state & State_On ? QIcon::On : QIcon::Off;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       auto window = widget ? widget->windowHandle() : nullptr;
+#endif
       QPixmap pixmap = button->icon.pixmap(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           window, button->iconSize,
