@@ -5354,7 +5354,7 @@ int PhantomStyle::styleHint(StyleHint hint, const QStyleOption* option,
   case SH_PrintDialog_RightAlignButtons:
   case SH_FontDialog_SelectAssociatedText:
   case SH_ComboBox_ListMouseTracking:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
   case SH_ScrollBar_StopMouseOverSlider:
 #else
   case SH_Slider_StopMouseOverSlider:
