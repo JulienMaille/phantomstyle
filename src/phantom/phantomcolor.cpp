@@ -369,6 +369,9 @@ rgb2hsluv(double r, double g, double b, double* ph, double* ps, double* pl)
 
 // clang-format on
 } // namespace
+
+Hsl::Hsl(qreal h, qreal s, qreal l)
+    : h(normalizeHue(h)), s(saturate(s)), l(saturate(l)) {}
 } // namespace Phantom
 
 
@@ -403,13 +406,14 @@ Hsl hsl_of_rgb(qreal r, qreal g, qreal b) {
 }
 Rgb rgb_of_hsl(qreal h, qreal s, qreal l) {
   double r, g, b;
-  hsluv2rgb(h, s * 100.0, l * 100.0, &r, &g, &b);
+  hsluv2rgb(normalizeHue(h), saturate(s) * 100.0, saturate(l) * 100.0, &r,
+            &g, &b);
   return Rgb((qreal)r, (qreal)g, (qreal)b);
 }
 QColor qcolor_of_rgb(qreal r, qreal g, qreal b) {
-  int r_ = (int)std::lround(srgb_of_linear(r) * 255.0);
-  int g_ = (int)std::lround(srgb_of_linear(g) * 255.0);
-  int b_ = (int)std::lround(srgb_of_linear(b) * 255.0);
+  int r_ = (int)std::lround(srgb_of_linear(saturate(r)) * 255.0);
+  int g_ = (int)std::lround(srgb_of_linear(saturate(g)) * 255.0);
+  int b_ = (int)std::lround(srgb_of_linear(saturate(b)) * 255.0);
   return QColor(r_, g_, b_);
 }
 QColor lerpQColor(const QColor& x, const QColor& y, qreal a) {

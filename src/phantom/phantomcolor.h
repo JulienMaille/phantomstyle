@@ -1,6 +1,9 @@
 #ifndef PHANTOMCOLOR_H
 #define PHANTOMCOLOR_H
+
+#include <QtCore/qnumeric.h>
 #include <QtGui/qcolor.h>
+#include <cmath>
 
 namespace Phantom {
 struct Rgb;
@@ -10,8 +13,8 @@ struct Hsl;
 // the range 0.0 - 1.0. Conversions to and from QColor will assume the QColor
 // is in sRGB space, and sRGB conversion will be performed.
 struct Rgb {
-  qreal r, g, b;
-  Rgb() {}
+  qreal r = 0.0, g = 0.0, b = 0.0; // value-init: no indeterminate members
+  Rgb() = default;
   Rgb(qreal r, qreal g, qreal b) : r(r), g(g), b(b) {}
 
   inline Hsl toHsl() const;
@@ -38,9 +41,9 @@ struct Rgb {
 // for consistency we treat the S and L values in the range 0.0 - 1.0 instead
 // of 0.0 - 100.0 like hsluv-c on its own does.)
 struct Hsl {
-  qreal h, s, l;
-  Hsl() {}
-  Hsl(qreal h, qreal s, qreal l) : h(h), s(s), l(l) {}
+  qreal h = 0.0, s = 0.0, l = 0.0; // value-init; Hsl() clamps/wraps below
+  Hsl() = default;
+  Hsl(qreal h, qreal s, qreal l);
 
   inline Rgb toRgb() const;
   inline QColor toQColor() const;
@@ -51,8 +54,17 @@ Rgb rgb_of_qcolor(const QColor& color);
 QColor qcolor_of_rgb(qreal r, qreal g, qreal b);
 Hsl hsl_of_rgb(qreal r, qreal g, qreal b);
 Rgb rgb_of_hsl(qreal h, qreal s, qreal l);
-// Clip a floating point value to the range 0.0 - 1.0.
+// Wrap hue to [0, 360); never saturate() a hue (destroys wraparound).
+inline qreal normalizeHue(qreal h) {
+  qreal w = std::fmod(h, 360.0);
+  if (w < 0.0)
+    w += 360.0;
+  return w + 0.0; // normalize a possible -0.0
+}
+// Clip to 0.0 - 1.0; NaN maps to 0.0 (else it passes through unchanged).
 inline qreal saturate(qreal x) {
+  if (qIsNaN(x))
+    return 0.0;
   if (x < 0.0)
     return 0.0;
   if (x > 1.0)
@@ -60,6 +72,7 @@ inline qreal saturate(qreal x) {
   return x;
 }
 inline qreal lerp(qreal x, qreal y, qreal a) { return (1.0 - a) * x + a * y; }
+// NOTE: Rgb/Hsl carry no alpha; transparent QColors become opaque.
 // Linearly interpolate two QColors after trasnforming them to linear color
 // space, treating the QColor values as if they were in sRGB space. The
 // returned QColor is converted back to sRGB space.
