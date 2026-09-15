@@ -242,9 +242,6 @@ QColor lightShadeOf(const QColor& underlying) {
 QColor darkShadeOf(const QColor& underlying) {
   return adjustLightness(underlying, -0.07);
 }
-QColor overhangShadowOf(const QColor& underlying) {
-  return adjustLightness(underlying, -0.05);
-}
 QColor sliderGutterShadowOf(const QColor& underlying) {
   return adjustLightness(underlying, -0.01);
 }
@@ -805,18 +802,6 @@ QRect menuItemCheckRect(const MenuItemMetrics& metrics,
     checkRightSpace = 0;
   r.setSize(QSize(metrics.checkWidth, metrics.fontHeight));
   r.adjust(checkRightSpace, checkVMargin, checkRightSpace, -checkVMargin);
-  return QStyle::visualRect(direction, itemRect, r) & itemRect;
-}
-QRect menuItemVLineRect(const MenuItemMetrics& metrics,
-                        Qt::LayoutDirection direction, QRect itemRect,
-                        bool hasArrow) {
-  QRect r = menuItemContentRect(metrics, itemRect, hasArrow);
-  int checkVMargin = (int)((qreal)metrics.fontHeight *
-                           MenuItem_CheckMarkVerticalInsetFontRatio);
-  if (checkVMargin < 0)
-    checkVMargin = 0;
-  //r.setSize(QSize(metrics.iconRightSpace, itemRect.height()));
-  //r.adjust(0, checkVMargin, 0, -checkVMargin);
   return QStyle::visualRect(direction, itemRect, r) & itemRect;
 }
 QRect menuItemIconRect(const MenuItemMetrics& metrics,
