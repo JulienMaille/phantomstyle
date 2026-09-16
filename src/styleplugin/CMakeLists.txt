@@ -16,15 +16,15 @@ add_library(${PROJECT_NAME} SHARED
     phantomstyleplugin.h
     phantomstyleplugin.json
 
-    ../Phantom/phantomcolor.cpp
-    ../Phantom/phantomcolor.h
-    ../Phantom/phantomstyle.cpp
-    ../Phantom/phantomstyle.h
-    ../Phantom/phantomtweak.h
+    ../phantom/phantomcolor.cpp
+    ../phantom/phantomcolor.h
+    ../phantom/phantomstyle.cpp
+    ../phantom/phantomstyle.h
+    ../phantom/phantomtweak.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ../Phantom
+    ../phantom
 )
 
 # Build type suffix for library name
