@@ -5,7 +5,7 @@ TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
-CONFIG += c++11
+CONFIG += c++11 console
 
 include(../src/phantom/phantom.pri)
 

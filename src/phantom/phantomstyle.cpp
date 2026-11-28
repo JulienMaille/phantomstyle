@@ -5038,6 +5038,21 @@ QRect PhantomStyle::subControlRect(ComplexControl control,
           centerX -= tickSize;
         rect.moveLeft(centerX);
       }
+      // The centered handle can start at -1 for some font-derived
+      // thicknesses. Its 1 px outline would then fall outside the widget and
+      // get clipped, leaving the top/left border missing. Keep the handle
+      // inside the slider rect; if it is bigger than the widget, at least
+      // anchor its leading edge so that border stays visible.
+      if (rect.top() < slider->rect.top())
+        rect.moveTop(slider->rect.top());
+      if (rect.left() < slider->rect.left())
+        rect.moveLeft(slider->rect.left());
+      if (rect.bottom() > slider->rect.bottom() &&
+          rect.height() <= slider->rect.height())
+        rect.moveBottom(slider->rect.bottom());
+      if (rect.right() > slider->rect.right() &&
+          rect.width() <= slider->rect.width())
+        rect.moveRight(slider->rect.right());
       break;
     }
     case SC_SliderGroove: {

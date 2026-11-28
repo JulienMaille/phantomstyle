@@ -29,6 +29,7 @@ public:
 
 private slots:
   void changeStyle(const QString& styleName);
+  void changeFont(int index);
   void changePalette();
   void advanceProgressBar();
 
@@ -43,6 +44,8 @@ private:
 
   QLabel* styleLabel;
   QComboBox* styleComboBox;
+  QLabel* fontLabel;
+  QComboBox* fontComboBox;
   QCheckBox* useStylePaletteCheckBox;
   QCheckBox* disableWidgetsCheckBox;
   QGroupBox* topLeftGroupBox;
