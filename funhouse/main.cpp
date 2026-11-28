@@ -120,6 +120,20 @@ QPalette namedColorSchemePalette(ThemeType x) {
     pal.setColor(QPalette::HighlightedText, x.highlightedText);
     if (x.disabledButton.isValid())
       pal.setColor(QPalette::Disabled, QPalette::Button, x.disabledButton);
+    // Qt's default Light/Midlight/Dark roles are light grays, which clash
+    // with a dark palette (Phantom uses Midlight for table grid lines).
+    // Derive them from the theme background instead.
+    const bool dark = qGray(x.window.rgb()) < 128;
+    auto mix = [](const QColor& a, const QColor& b, qreal t) {
+      return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t,
+                              a.greenF() + (b.greenF() - a.greenF()) * t,
+                              a.blueF() + (b.blueF() - a.blueF()) * t);
+    };
+    pal.setColor(QPalette::Light, mix(x.window, Qt::white, dark ? 0.14 : 0.10));
+    pal.setColor(QPalette::Midlight,
+                 mix(x.window, dark ? QColor(Qt::white) : QColor(Qt::black),
+                     0.06));
+    pal.setColor(QPalette::Dark, mix(x.window, Qt::black, 0.12));
     // Used as the shadow text color on disabled menu items
     pal.setColor(QPalette::Disabled, QPalette::Light, Qt::transparent);
     return pal;
