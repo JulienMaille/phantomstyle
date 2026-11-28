@@ -4406,6 +4406,11 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_ButtonMargin:
     val = 6;
     break;
+#ifdef PM_ButtonIconLabelMargin
+  case PM_ButtonIconLabelMargin:
+    val = -15;
+    break;
+#endif
   case PM_ComboBoxFrameWidth:
     val = 1;
     break;
