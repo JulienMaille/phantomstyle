@@ -16,7 +16,16 @@ HEADERS += phantomstyleplugin.h
 
 OTHER_FILES += phantomstyleplugin.json
 
-DESTDIR = $$[QT_INSTALL_PLUGINS]/styles
+# By default the plugin is copied into the Qt styles plugin directory, which
+# usually requires write access to the Qt installation. Set
+# PHANTOM_PLUGIN_DESTDIR (e.g. on the qmake command line) to place the plugin
+# somewhere else instead. Note: a plain 'qmake VAR=value' assignment does not
+# override an assignment made here, which is why this is conditional instead.
+isEmpty(PHANTOM_PLUGIN_DESTDIR) {
+    DESTDIR = $$[QT_INSTALL_PLUGINS]/styles
+} else {
+    DESTDIR = $$PHANTOM_PLUGIN_DESTDIR
+}
 
 g++ {
     QMAKE_CXXFLAGS *= -Wno-unused-function -Wno-unknown-pragmas
