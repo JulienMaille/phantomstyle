@@ -10,7 +10,9 @@
 #include <QPushButton>
 #include <QStyleFactory>
 #include <QStyleOptionButton>
+#include <QSpinBox>
 #include <QStyleOptionSlider>
+#include <QStyleOptionSpinBox>
 #include <QTableWidget>
 #include <cstdio>
 
@@ -135,6 +137,44 @@ int main(int argc, char** argv) {
                 "slider handle outline is not clipped");
       }
     }
+  }
+
+  {
+    // With an odd widget height the up button is 1 px shorter than the down
+    // button; the lower chevron used to end up 1 px off the symmetry axis.
+    QSpinBox spin;
+    spin.setRange(0, 100);
+    spin.setValue(42);
+    spin.resize(spin.sizeHint().width(), 21);
+    const QImage img = spin.grab().toImage();
+    QStyleOptionSpinBox opt;
+    opt.initFrom(&spin);
+    opt.frame = true;
+    opt.buttonSymbols = QAbstractSpinBox::UpDownArrows;
+    opt.stepEnabled = QAbstractSpinBox::StepUpEnabled |
+                      QAbstractSpinBox::StepDownEnabled;
+    opt.activeSubControls = QStyle::SC_None;
+    const QRect up = app.style()->subControlRect(QStyle::CC_SpinBox, &opt,
+                                                 QStyle::SC_SpinBoxUp, &spin);
+    const QRect down = app.style()->subControlRect(QStyle::CC_SpinBox, &opt,
+                                                   QStyle::SC_SpinBoxDown, &spin);
+    auto arrowCenterY = [&](const QRect& r) {
+      int min = 100000, max = -1;
+      const int cx = r.center().x();
+      for (int y = r.top(); y <= r.bottom(); ++y) {
+        for (int x = cx - 4; x <= cx + 4; ++x) {
+          if (qGray(img.pixel(x, y)) < 200) {
+            min = qMin(min, y);
+            max = qMax(max, y);
+          }
+        }
+      }
+      return (min + max) / 2.0;
+    };
+    const double center = (spin.height() - 1) / 2.0;
+    const double delta = (arrowCenterY(up) - center) -
+                         (center - arrowCenterY(down));
+    require(qAbs(delta) <= 0.3, "spinbox chevrons symmetric at odd height");
   }
 
   if (failures) {
