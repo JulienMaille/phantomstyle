@@ -1,0 +1,67 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.qt }} / ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        qt: [qt5, qt6]
+        compiler: [gcc, clang]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.qt }}" = "qt6" ]; then
+            sudo apt-get install -y --no-install-recommends \
+              qt6-base-dev qt6-base-dev-tools libgl-dev
+          else
+            sudo apt-get install -y --no-install-recommends \
+              qtbase5-dev qt5-qmake libgl-dev
+          fi
+
+      - name: qmake builds (plugin, funhouse, smoke test)
+        run: |
+          set -e
+          if [ "${{ matrix.qt }}" = "qt6" ]; then
+            QMAKE="$(command -v qmake6 || echo /usr/lib/qt6/bin/qmake)"
+          else
+            QMAKE="/usr/lib/qt5/bin/qmake"
+            [ -x "$QMAKE" ] || QMAKE=qmake
+          fi
+          "$QMAKE" -query QT_VERSION
+
+          QMAKE_ARGS=()
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            QMAKE_ARGS+=("QMAKE_CC=clang" "QMAKE_CXX=clang++")
+          fi
+
+          (cd src/styleplugin \
+            && "$QMAKE" phantomstyleplugin.pro \
+                 "PHANTOM_PLUGIN_DESTDIR=$PWD/../../build-qmake-plugin" \
+                 "${QMAKE_ARGS[@]}" \
+            && make -j"$(nproc)")
+
+          (cd funhouse && "$QMAKE" funhouse.pro "${QMAKE_ARGS[@]}" \
+            && make -j"$(nproc)")
+
+          (cd tests && "$QMAKE" smoketest.pro "${QMAKE_ARGS[@]}" \
+            && make -j"$(nproc)")
+
+      - name: CMake build (plugin)
+        run: |
+          cmake -S src/styleplugin -B build-cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-cmake
+
+      - name: Smoke test (offscreen)
+        run: |
+          QT_QPA_PLATFORM=offscreen ./tests/smoketest
