@@ -3997,7 +3997,7 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
     }
 
     // Slider thumb
-    if (scrollBar->subControls & SC_ScrollBarSlider && !Ph::ScrollAreaModern) {
+    if (scrollBar->subControls & SC_ScrollBarSlider) {
       Swatchy thumbFill, thumbSpecular;
       if (isSunken && scrollBar->activeSubControls & SC_ScrollBarSlider) {
         thumbFill = S_button_pressed;
@@ -4009,45 +4009,48 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
         thumbFill = S_window;
         thumbSpecular = S_none;
       }
-      Qt::Edges edges;
-      QRect edgeRect = scrollBarSlider;
-      QRect mainRect = scrollBarSlider;
-      if (isHorizontal) {
-        edges = Qt::LeftEdge | Qt::TopEdge | Qt::RightEdge;
-        edgeRect.adjust(-1, 0, 1, 0);
-        mainRect.setY(mainRect.y() + 1);
-      } else {
-        edgeRect.adjust(0, -1, 0, 1);
-        if (isLeftToRight) {
-          edges = Qt::LeftEdge | Qt::TopEdge | Qt::BottomEdge;
-          mainRect.setX(mainRect.x() + 1);
+      if (!Ph::ScrollAreaModern) {
+        Qt::Edges edges;
+        QRect edgeRect = scrollBarSlider;
+        QRect mainRect = scrollBarSlider;
+        if (isHorizontal) {
+          edges = Qt::LeftEdge | Qt::TopEdge | Qt::RightEdge;
+          edgeRect.adjust(-1, 0, 1, 0);
+          mainRect.setY(mainRect.y() + 1);
         } else {
-          edges = Qt::TopEdge | Qt::BottomEdge | Qt::RightEdge;
-          mainRect.setWidth(mainRect.width() - 1);
+          edgeRect.adjust(0, -1, 0, 1);
+          if (isLeftToRight) {
+            edges = Qt::LeftEdge | Qt::TopEdge | Qt::BottomEdge;
+            mainRect.setX(mainRect.x() + 1);
+          } else {
+            edges = Qt::TopEdge | Qt::BottomEdge | Qt::RightEdge;
+            mainRect.setWidth(mainRect.width() - 1);
+          }
         }
-      }
-      Ph::fillRectEdges(painter, edgeRect, edges, 1,
-                        swatch.color(S_window_outline));
-      painter->fillRect(mainRect, swatch.color(thumbFill));
-      if (thumbSpecular && Ph::BorderSpecularOnScrollBar) {
-        Ph::fillRectOutline(painter, mainRect, 1, swatch.color(thumbSpecular));
-      }
-    } else {
-      float scale = hasFocus ? 0.25f : 0.4f;
-      QRect r = scrollBarSlider;
-      if (isHorizontal) {
-        float h = r.height() * scale;
-        //r.setY(r.y() + (r.height() - h) / 2);
-        //r.setHeight(h);
-        r.adjust(0, h + 1, 0, -h);
+        Ph::fillRectEdges(painter, edgeRect, edges, 1,
+                          swatch.color(S_window_outline));
+        painter->fillRect(mainRect, swatch.color(thumbFill));
+        if (thumbSpecular && Ph::BorderSpecularOnScrollBar) {
+          Ph::fillRectOutline(painter, mainRect, 1, swatch.color(thumbSpecular));
+        }
       } else {
-        float w = r.width() * scale;
-        r.adjust(w, 0, -w, 0);
-        //r.setX(r.x() + (r.width() - w) / 2);
-        //r.setWidth(w);
+        Ph::PSave save(painter);
+        float scale = hasFocus ? 0.25f : 0.4f;
+        QRect r = scrollBarSlider;
+        if (isHorizontal) {
+          float h = r.height() * scale;
+          //r.setY(r.y() + (r.height() - h) / 2);
+          //r.setHeight(h);
+          r.adjust(0, h + 1, 0, -h);
+        } else {
+          float w = r.width() * scale;
+          r.adjust(w, 0, -w, 0);
+          //r.setX(r.x() + (r.width() - w) / 2);
+          //r.setWidth(w);
+        }
+        Ph::paintSolidRoundRect(painter, r, hasFocus ? 4 : 1, swatch,
+                                S_base_shadow);
       }
-      Ph::paintSolidRoundRect(painter, r, hasFocus ? 4 : 1, swatch,
-                              S_base_shadow);
     }
 
     // The SubLine (up/left) buttons
