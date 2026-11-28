@@ -3562,10 +3562,15 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
       painter->drawLine(centerX - 1, centerY, centerX + 3, centerY);
     } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows) {
       int xoffs = isLeftToRight ? 0 : 1;
+      // With an odd widget height the up button is one pixel shorter than the
+      // down button. Inset the lower chevron by one extra pixel in that case
+      // so both stay symmetric about the widget center.
+      int downTopInset = 2 + (spinBox->rect.height() & 1);
       Ph::drawArrow(painter, upRect.adjusted(4 + xoffs, 3, -5 + xoffs, -2),
                     Qt::UpArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled);
-      Ph::drawArrow(painter, downRect.adjusted(4 + xoffs, 2, -5 + xoffs, -3),
+      Ph::drawArrow(painter,
+                    downRect.adjusted(4 + xoffs, downTopInset, -5 + xoffs, -3),
                     Qt::DownArrow, swatch,
                     spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled);
     }
