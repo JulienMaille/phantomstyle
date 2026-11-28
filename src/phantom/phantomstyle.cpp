@@ -18,6 +18,7 @@
 #include <QtWidgets/qdrawutil.h>
 #include <QtWidgets/qstyleoption.h>
 #include <cmath>
+#include <type_traits>
 #if QT_CONFIG(combobox)
 #include <QtWidgets/qcombobox.h>
 #endif
@@ -664,6 +665,34 @@ public:
   Phantom::PhSwatchCache swatchCache;
   QPen checkBox_pen_scratch;
 };
+
+namespace Phantom {
+namespace {
+
+// Detect at compile time whether the Qt headers in use declare the private
+// PixelMetric PM_ButtonIconLabelMargin (added by the author's own Qt5 patch,
+// absent from stock Qt). This keeps patched-Qt builds returning -15 without
+// breaking stock Qt builds, with no macro to define.
+template <typename T, typename = decltype(T::PM_ButtonIconLabelMargin)>
+std::true_type buttonIconLabelMarginExists(int);
+template <typename T>
+std::false_type buttonIconLabelMarginExists(...);
+
+template <typename T,
+          bool Exists = decltype(buttonIconLabelMarginExists<T>(0))::value>
+struct PatchedQtMetrics {
+  static constexpr bool isButtonIconLabelMargin(int) { return false; }
+};
+
+template <typename T>
+struct PatchedQtMetrics<T, true> {
+  static constexpr bool isButtonIconLabelMargin(int metric) {
+    return metric == static_cast<int>(T::PM_ButtonIconLabelMargin);
+  }
+};
+
+} // namespace
+} // namespace Phantom
 
 namespace Phantom {
 namespace {
@@ -4392,6 +4421,10 @@ void PhantomStyle::drawComplexControl(ComplexControl control,
 int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
                               const QWidget* widget) const {
   int val = -1;
+  if (Phantom::PatchedQtMetrics<QStyle>::isButtonIconLabelMargin(
+          static_cast<int>(metric))) {
+    return -15;
+  }
   switch (metric) {
   case PM_SliderTickmarkOffset:
     val = 4;
@@ -4406,11 +4439,6 @@ int PhantomStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
   case PM_ButtonMargin:
     val = 6;
     break;
-#ifdef PM_ButtonIconLabelMargin
-  case PM_ButtonIconLabelMargin:
-    val = -15;
-    break;
-#endif
   case PM_ComboBoxFrameWidth:
     val = 1;
     break;
