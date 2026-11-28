@@ -68,6 +68,19 @@ WidgetGallery::WidgetGallery(QWidget* parent) : QWidget(parent) {
   styleLabel = new QLabel(tr("Style:"));
   styleLabel->setBuddy(styleComboBox);
 
+  fontComboBox = new QComboBox;
+  fontComboBox->addItem(tr("Qt5 font"));
+  fontComboBox->addItem(tr("Qt6 font"));
+  fontComboBox->setItemData(0, tr("MS Shell Dlg 2, 8.25pt (Qt 5 default)"),
+                            Qt::ToolTipRole);
+  fontComboBox->setItemData(1, tr("Segoe UI, 9pt (Qt 6 default)"),
+                            Qt::ToolTipRole);
+  fontComboBox->setToolTip(tr("Application font. Phantom derives widget metrics from it."));
+  fontComboBox->setCurrentIndex(0);
+
+  fontLabel = new QLabel(tr("Font:"));
+  fontLabel->setBuddy(fontComboBox);
+
   useStylePaletteCheckBox = new QCheckBox(tr("Use style's standard palette"));
   useStylePaletteCheckBox->setChecked(false);
 
@@ -84,6 +97,7 @@ WidgetGallery::WidgetGallery(QWidget* parent) : QWidget(parent) {
   connect(styleComboBox, SIGNAL(activated(QString)),
           //! [1] //! [2]
           this, SLOT(changeStyle(QString)));
+  connect(fontComboBox, SIGNAL(activated(int)), this, SLOT(changeFont(int)));
   connect(useStylePaletteCheckBox, SIGNAL(toggled(bool)), this,
           SLOT(changePalette()));
   connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)), topLeftGroupBox,
@@ -101,6 +115,8 @@ WidgetGallery::WidgetGallery(QWidget* parent) : QWidget(parent) {
   //! [3] //! [4]
   topLayout->addWidget(styleLabel);
   topLayout->addWidget(styleComboBox);
+  topLayout->addWidget(fontLabel);
+  topLayout->addWidget(fontComboBox);
   topLayout->addStretch(1);
   topLayout->addWidget(useStylePaletteCheckBox);
   topLayout->addWidget(disableWidgetsCheckBox);
@@ -137,6 +153,20 @@ void WidgetGallery::changeStyle(const QString& styleName)
   changePalette();
 }
 //! [6]
+
+void WidgetGallery::changeFont(int index) {
+  QFont font = QApplication::font();
+  if (index == 0) {
+    // Qt 5 default on Windows
+    font.setFamily(QStringLiteral("MS Shell Dlg 2"));
+    font.setPointSizeF(8.25);
+  } else {
+    // Qt 6 default on Windows
+    font.setFamily(QStringLiteral("Segoe UI"));
+    font.setPointSize(9);
+  }
+  QApplication::setFont(font);
+}
 
 //! [7]
 void WidgetGallery::changePalette()

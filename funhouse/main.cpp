@@ -1,5 +1,6 @@
 #include "PhTestApp.h"
 #include "phantomstyle.h"
+#include <QFont>
 #include <QMainWindow>
 #ifdef BUILD_WITH_EASY_PROFILER
 #include <easy/profiler.h>
@@ -39,6 +40,16 @@ int main(int argc, char* argv[]) {
   // QApplication::setPalette(namedColorSchemePalette(Carbon));
   // QApplication::setLayoutDirection(Qt::RightToLeft);
   PhTestApp a(argc, argv);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  // Qt 6 defaults to Segoe UI 9pt on Windows, while Qt 5 used
+  // MS Shell Dlg 2 8.25pt. Phantom derives many widget metrics from the
+  // application font, so use the Qt 5 font to keep the gallery rendering at
+  // the same size on both Qt versions.
+  QFont qt5Font = a.font();
+  qt5Font.setFamily(QStringLiteral("MS Shell Dlg 2"));
+  qt5Font.setPointSizeF(8.25);
+  a.setFont(qt5Font);
+#endif
   QApplication::setStyle(new PhantomStyle);
   QApplication::setPalette(namedColorSchemePalette(Polar));
   // Setting the font for the whole application will override qpa

@@ -18,6 +18,18 @@
 
 static int failures = 0;
 
+// Force an even thickness so the centered handle starts at y == -1 regardless
+// of the fonts installed on the machine running the test.
+class FixedThicknessPhantomStyle : public PhantomStyle {
+ public:
+  int pixelMetric(QStyle::PixelMetric metric, const QStyleOption* option,
+                  const QWidget* widget) const override {
+    if (metric == QStyle::PM_SliderThickness)
+      return 16;
+    return PhantomStyle::pixelMetric(metric, option, widget);
+  }
+};
+
 static void require(bool ok, const char* what) {
   if (!ok) {
     fprintf(stderr, "FAIL: %s\n", what);
@@ -100,6 +112,29 @@ int main(int argc, char** argv) {
                 (int)p.brush().style() == beforeBrush,
             "CC_ScrollBar leaves painter state unchanged");
     p.end();
+  }
+
+  {
+    // Regression test: the centered handle used to start at -1 for even
+    // thicknesses, so its 1 px leading outline was clipped away.
+    FixedThicknessPhantomStyle style;
+    for (int vertical = 0; vertical < 2; ++vertical) {
+      for (int dim : {15, 16}) {
+        QStyleOptionSlider sopt;
+        sopt.state = QStyle::State_Enabled;
+        sopt.rect = vertical ? QRect(0, 0, dim, 120) : QRect(0, 0, 120, dim);
+        sopt.minimum = 0;
+        sopt.maximum = 100;
+        sopt.sliderPosition = 40;
+        sopt.sliderValue = 40;
+        sopt.orientation = vertical ? Qt::Vertical : Qt::Horizontal;
+        sopt.subControls = QStyle::SC_All;
+        const QRect handle = style.subControlRect(
+            QStyle::CC_Slider, &sopt, QStyle::SC_SliderHandle, nullptr);
+        require(handle.top() >= 0 && handle.left() >= 0,
+                "slider handle outline is not clipped");
+      }
+    }
   }
 
   if (failures) {
